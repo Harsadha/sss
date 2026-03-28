@@ -3,633 +3,662 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SecureAuth — MFA Security Platform</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<title>SecureAuth — MFA System</title>
 <style>
-:root{
-  --bg:#080b10;--bg2:#0a0e15;--surface:#101820;--surface2:#141f2e;
-  --border:#1a2d40;--border2:#223650;
-  --accent:#00d4ff;--accent3:#00ff88;
-  --danger:#ff4455;--warn:#ffbb00;--purple:#a855f7;--orange:#ff8c00;
-  --text:#e0eeff;--text2:#5a7a9a;--text3:#2e4560;
-  --glow:0 0 22px rgba(0,212,255,0.22);
-  --panel-w:320px;
-  --mono:'Space Mono',monospace;--sans:'Syne',sans-serif;
+* { margin:0; padding:0; box-sizing:border-box; }
+
+:root {
+  --bg: #efefec;
+  --surface: #f8f8f6;
+  --white: #ffffff;
+  --border: #c8c6c0;
+  --border2: #a8a6a0;
+  --text: #1a1a18;
+  --muted: #60605a;
+  --faint: #a0a09a;
+  --ok: #2a5c38;
+  --err: #8a0018;
+  --warn: #6a4800;
+  --accent: #1a3a8a;
 }
-*{margin:0;padding:0;box-sizing:border-box;}
-html,body{height:100%;overflow:hidden;}
-body{background:var(--bg);color:var(--text);font-family:var(--sans);}
-body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,212,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,0.02) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;z-index:0;}
 
-/* ── Root shell ── */
-.shell{display:flex;flex-direction:column;height:100vh;position:relative;z-index:1;}
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 13px;
+}
 
-/* ── Header ── */
-.hdr{display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:54px;border-bottom:1px solid var(--border);background:rgba(8,11,16,0.95);backdrop-filter:blur(20px);flex-shrink:0;z-index:100;}
-.logo{display:flex;align-items:center;gap:9px;}
-.logo svg{width:28px;height:28px;}
-.logo-txt{font-weight:800;font-size:1.1rem;letter-spacing:-0.02em;}
-.logo-txt span{color:var(--accent);}
-.hdr-right{display:flex;align-items:center;gap:10px;}
-.hbtn{font-family:var(--mono);font-size:0.58rem;color:var(--text2);letter-spacing:0.1em;text-transform:uppercase;padding:5px 10px;border:1px solid var(--border);border-radius:3px;transition:all 0.2s;cursor:pointer;text-decoration:none;display:inline-block;}
-.hbtn:hover{color:var(--accent);border-color:var(--accent);}
-.hbtn.red{color:var(--danger);border-color:rgba(255,68,85,0.3);}
-.hbtn.red:hover{background:rgba(255,68,85,0.08);}
-.hdot{width:6px;height:6px;border-radius:50%;background:var(--accent3);box-shadow:0 0 7px var(--accent3);animation:blink 2s infinite;margin-right:5px;}
-@keyframes blink{0%,100%{opacity:1;}50%{opacity:0.2;}}
-.hstatus{display:flex;align-items:center;font-family:var(--mono);font-size:0.58rem;color:var(--text2);}
+.shell { display: flex; flex-direction: column; height: 100vh; }
 
-/* ── Body row ── */
-.body-row{display:flex;flex:1;overflow:hidden;}
+/* header */
+header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 16px;
+  height: 38px;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0;
+}
+.logo { font-size: 13px; font-weight: 700; font-family: monospace; }
+.hdr-right { display: flex; align-items: center; gap: 10px; }
+.hbtn {
+  font-size: 11px; padding: 3px 10px; font-family: monospace;
+  border: 1px solid var(--border2); background: var(--surface);
+  color: var(--muted); cursor: pointer; text-decoration: none; display: inline-block;
+}
+.hbtn:hover { background: var(--border); color: var(--text); }
+.hbtn.red { color: var(--err); border-color: var(--err); }
+.hbtn.red:hover { background: #fdf0f2; }
+#hdrStatus { font-family: monospace; font-size: 11px; color: var(--muted); }
 
-/* ── Main content ── */
-.content{flex:1;overflow-y:auto;padding:28px 28px;scrollbar-width:thin;scrollbar-color:var(--border2) transparent;}
-.content::-webkit-scrollbar{width:5px;}
-.content::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+/* layout */
+.body-row { display: flex; flex: 1; overflow: hidden; }
+.content { flex: 1; overflow-y: auto; padding: 20px; }
 
-/* ── Side panel ── */
-.side{width:var(--panel-w);min-width:var(--panel-w);border-left:1px solid var(--border);background:var(--bg2);display:flex;flex-direction:column;flex-shrink:0;}
-.side-hdr{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--border);flex-shrink:0;}
-.side-title{font-family:var(--mono);font-size:0.62rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--accent);display:flex;align-items:center;gap:7px;}
-.side-live{width:5px;height:5px;border-radius:50%;background:var(--accent3);box-shadow:0 0 6px var(--accent3);animation:blink 1.5s infinite;}
-.side-actions{display:flex;gap:6px;}
-.side-btn{font-family:var(--mono);font-size:0.55rem;padding:3px 8px;border:1px solid var(--border2);color:var(--text3);cursor:pointer;border-radius:2px;background:transparent;transition:all 0.15s;}
-.side-btn:hover{color:var(--text2);border-color:var(--border);}
+/* side panel */
+.side {
+  width: 280px; min-width: 280px; flex-shrink: 0;
+  border-left: 1px solid var(--border);
+  background: var(--surface);
+  display: flex; flex-direction: column;
+}
+.side-hdr {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 7px 10px; border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.side-title { font-family: monospace; font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.side-actions { display: flex; gap: 5px; }
+.side-btn {
+  font-family: monospace; font-size: 10px; padding: 2px 8px;
+  border: 1px solid var(--border2); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.side-btn:hover { background: var(--border); }
+.side-filters { display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.sf {
+  flex: 1; padding: 5px 2px; text-align: center;
+  font-family: monospace; font-size: 10px; text-transform: uppercase;
+  color: var(--muted); cursor: pointer; border-right: 1px solid var(--border);
+  border-bottom: 2px solid transparent;
+}
+.sf:last-child { border-right: none; }
+.sf.active { background: var(--white); color: var(--accent); border-bottom-color: var(--accent); }
+.sf:hover:not(.active) { background: var(--border); }
+.side-feed { flex: 1; overflow-y: auto; padding: 6px; scrollbar-width: thin; }
 
-/* ── Filter tabs ── */
-.side-filters{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;}
-.sf{flex:1;padding:7px 4px;text-align:center;font-family:var(--mono);font-size:0.55rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.15s;}
-.sf.active{color:var(--accent);border-bottom-color:var(--accent);}
-.sf:hover:not(.active){color:var(--text2);}
+/* events */
+.ev { border: 1px solid var(--border); margin-bottom: 3px; background: var(--white); font-family: monospace; }
+.ev-head { display: flex; align-items: center; gap: 6px; padding: 5px 8px; cursor: pointer; user-select: none; border-left: 3px solid transparent; }
+.ev-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.ev-type { font-size: 10px; font-weight: 700; text-transform: uppercase; flex: 1; }
+.ev-time { font-size: 9px; color: var(--faint); }
+.ev-chevron { font-size: 9px; color: var(--faint); transition: transform .15s; }
+.ev.open .ev-chevron { transform: rotate(90deg); }
+.ev-body { display: none; border-top: 1px solid var(--border); padding: 7px 10px; background: var(--surface); }
+.ev.open .ev-body { display: block; }
+.ev-field { margin-bottom: 4px; }
+.ev-key { font-size: 9px; color: var(--faint); text-transform: uppercase; margin-bottom: 1px; }
+.ev-val { font-size: 10px; color: var(--muted); word-break: break-all; line-height: 1.4; }
+.ev-val.green { color: var(--ok); } .ev-val.cyan { color: var(--accent); }
+.ev-val.red { color: var(--err); } .ev-val.warn { color: var(--warn); }
+.ev-val.purple { color: #5a3090; }
 
-/* ── Event feed ── */
-.side-feed{flex:1;overflow-y:auto;padding:8px;scrollbar-width:thin;scrollbar-color:var(--border) transparent;}
-.side-feed::-webkit-scrollbar{width:3px;}
-.side-feed::-webkit-scrollbar-thumb{background:var(--border);}
+.ev.cat-request .ev-head  { border-left-color: var(--accent); }
+.ev.cat-request .ev-dot   { background: var(--accent); }
+.ev.cat-request .ev-type  { color: var(--accent); }
+.ev.cat-response .ev-head { border-left-color: var(--ok); }
+.ev.cat-response .ev-dot  { background: var(--ok); }
+.ev.cat-response .ev-type { color: var(--ok); }
+.ev.cat-crypto .ev-head   { border-left-color: #5a3090; }
+.ev.cat-crypto .ev-dot    { background: #5a3090; }
+.ev.cat-crypto .ev-type   { color: #5a3090; }
+.ev.cat-auth .ev-head     { border-left-color: var(--warn); }
+.ev.cat-auth .ev-dot      { background: var(--warn); }
+.ev.cat-auth .ev-type     { color: var(--warn); }
+.ev.cat-error .ev-head    { border-left-color: var(--err); }
+.ev.cat-error .ev-dot     { background: var(--err); }
+.ev.cat-error .ev-type    { color: var(--err); }
+.ev.cat-key .ev-head      { border-left-color: #8a5000; }
+.ev.cat-key .ev-dot       { background: #8a5000; }
+.ev.cat-key .ev-type      { color: #8a5000; }
 
-/* ── Event entry ── */
-.ev{border:1px solid var(--border);border-radius:6px;margin-bottom:6px;overflow:hidden;animation:evIn 0.25s ease;background:var(--surface);}
-@keyframes evIn{from{opacity:0;transform:translateX(8px);}to{opacity:1;transform:none;}}
-.ev-head{display:flex;align-items:center;gap:7px;padding:7px 10px;cursor:pointer;user-select:none;}
-.ev-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
-.ev-type{font-family:var(--mono);font-size:0.58rem;letter-spacing:0.06em;flex:1;text-transform:uppercase;}
-.ev-time{font-family:var(--mono);font-size:0.52rem;color:var(--text3);}
-.ev-chevron{font-size:0.5rem;color:var(--text3);transition:transform 0.2s;}
-.ev.open .ev-chevron{transform:rotate(90deg);}
-.ev-body{display:none;border-top:1px solid var(--border);padding:8px 10px;}
-.ev.open .ev-body{display:block;}
-.ev-field{margin-bottom:5px;}
-.ev-key{font-family:var(--mono);font-size:0.52rem;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:2px;}
-.ev-val{font-family:var(--mono);font-size:0.62rem;color:var(--text2);word-break:break-all;line-height:1.45;}
-.ev-val.green{color:var(--accent3);}
-.ev-val.cyan{color:var(--accent);}
-.ev-val.red{color:var(--danger);}
-.ev-val.warn{color:var(--warn);}
-.ev-val.purple{color:var(--purple);}
+/* side summary — plain, no colors */
+.side-summary { border-top: 1px solid var(--border); padding: 6px 8px; display: flex; gap: 4px; flex-shrink: 0; }
+.ss-item { flex: 1; text-align: center; padding: 5px 3px; background: var(--white); border: 1px solid var(--border); }
+.ss-num { font-family: monospace; font-size: 15px; font-weight: 700; line-height: 1; color: var(--text); }
+.ss-lbl { font-family: monospace; font-size: 8px; letter-spacing: .06em; text-transform: uppercase; color: var(--faint); margin-top: 2px; }
 
-/* Category colors */
-.ev.cat-request .ev-dot{background:var(--accent);box-shadow:0 0 5px var(--accent);}
-.ev.cat-request .ev-head{border-left:2px solid var(--accent);}
-.ev.cat-request .ev-type{color:var(--accent);}
-.ev.cat-response .ev-dot{background:var(--accent3);box-shadow:0 0 5px var(--accent3);}
-.ev.cat-response .ev-head{border-left:2px solid var(--accent3);}
-.ev.cat-response .ev-type{color:var(--accent3);}
-.ev.cat-crypto .ev-dot{background:var(--purple);box-shadow:0 0 5px var(--purple);}
-.ev.cat-crypto .ev-head{border-left:2px solid var(--purple);}
-.ev.cat-crypto .ev-type{color:var(--purple);}
-.ev.cat-auth .ev-dot{background:var(--warn);box-shadow:0 0 5px var(--warn);}
-.ev.cat-auth .ev-head{border-left:2px solid var(--warn);}
-.ev.cat-auth .ev-type{color:var(--warn);}
-.ev.cat-error .ev-dot{background:var(--danger);box-shadow:0 0 5px var(--danger);}
-.ev.cat-error .ev-head{border-left:2px solid var(--danger);}
-.ev.cat-error .ev-type{color:var(--danger);}
-.ev.cat-key .ev-dot{background:var(--orange);box-shadow:0 0 5px var(--orange);}
-.ev.cat-key .ev-head{border-left:2px solid var(--orange);}
-.ev.cat-key .ev-type{color:var(--orange);}
+/* cards */
+.card { background: var(--white); border: 1px solid var(--border); padding: 18px; margin-bottom: 14px; }
+.clabel { font-family: monospace; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--faint); margin-bottom: 3px; }
+.ctitle { font-size: 17px; font-weight: 700; margin-bottom: 16px; line-height: 1.2; }
+.stitle { font-size: 13px; font-weight: 700; margin-bottom: 10px; }
 
-/* ── Side summary bar ── */
-.side-summary{border-top:1px solid var(--border);padding:8px 10px;flex-shrink:0;display:flex;gap:6px;flex-wrap:wrap;}
-.ss-item{flex:1;min-width:60px;text-align:center;padding:5px;background:var(--surface);border-radius:4px;border:1px solid var(--border);}
-.ss-num{font-family:var(--mono);font-size:1rem;font-weight:700;line-height:1;}
-.ss-lbl{font-family:var(--mono);font-size:0.48rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);margin-top:2px;}
-.ss-item.c .ss-num{color:var(--accent);}
-.ss-item.g .ss-num{color:var(--accent3);}
-.ss-item.r .ss-num{color:var(--danger);}
-.ss-item.p .ss-num{color:var(--purple);}
+.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+@media(max-width:900px) { .g2,.g3 { grid-template-columns: 1fr; } }
+.mt { margin-top: 14px; }
 
-/* ── Cards / layout ── */
-.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:26px;position:relative;overflow:hidden;}
-.card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:0.25;}
-.cscan{position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(0,212,255,0.09),transparent);animation:scan 5s linear infinite;pointer-events:none;}
-@keyframes scan{0%{top:0%;}100%{top:100%;}}
-.clabel{font-size:0.55rem;font-family:var(--mono);letter-spacing:0.15em;color:var(--accent);text-transform:uppercase;margin-bottom:5px;}
-.ctitle{font-size:1.55rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:18px;line-height:1.1;}
-.stitle{font-size:0.9rem;font-weight:700;margin-bottom:12px;}
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
-.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
-@media(max-width:900px){.g2,.g3{grid-template-columns:1fr;}}
-.mt{margin-top:14px;}
+/* auth layout */
+.auth-center { display: flex; align-items: center; justify-content: center; min-height: 100%; }
+.auth-box { width: 100%; max-width: 400px; }
 
-/* ── Auth tabs ── */
-.tabs{display:flex;gap:4px;margin-bottom:22px;background:var(--bg2);border-radius:9px;padding:3px;border:1px solid var(--border);}
-.tab{flex:1;padding:8px;text-align:center;font-family:var(--mono);font-size:0.65rem;letter-spacing:0.05em;color:var(--text3);cursor:pointer;border-radius:7px;transition:all 0.2s;text-transform:uppercase;}
-.tab.active{background:var(--surface2);color:var(--accent);border:1px solid var(--border2);}
+/* tabs */
+.tabs { display: flex; margin-bottom: 18px; border-bottom: 1px solid var(--border); }
+.tab {
+  padding: 7px 16px; font-family: monospace; font-size: 11px;
+  text-transform: uppercase; color: var(--muted); cursor: pointer;
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+  background: none; border-top: none; border-left: none; border-right: none;
+}
+.tab.active { color: var(--text); border-bottom-color: var(--text); font-weight: 700; }
+.tab:hover:not(.active) { color: var(--text); }
 
-/* ── Dash tabs ── */
-.dtabs{display:flex;margin-bottom:22px;border-bottom:1px solid var(--border);overflow-x:auto;}
-.dtab{padding:10px 18px;font-family:var(--mono);font-size:0.64rem;letter-spacing:0.06em;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s;text-transform:uppercase;white-space:nowrap;}
-.dtab.active{color:var(--accent);border-bottom-color:var(--accent);}
-.dtab:hover:not(.active){color:var(--text2);}
-.dpanel{display:none;}
-.dpanel.show{display:block;}
+.dtabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 18px; overflow-x: auto; }
+.dtab {
+  padding: 7px 14px; font-family: monospace; font-size: 11px;
+  text-transform: uppercase; color: var(--muted); cursor: pointer; white-space: nowrap;
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+  background: none; border-top: none; border-left: none; border-right: none;
+}
+.dtab.active { color: var(--text); border-bottom-color: var(--text); font-weight: 700; }
+.dtab:hover:not(.active) { color: var(--text); }
+.dpanel { display: none; }
+.dpanel.show { display: block; }
 
-/* ── Forms ── */
-.fg{margin-bottom:14px;}
-.fl{display:block;font-family:var(--mono);font-size:0.55rem;letter-spacing:0.12em;color:var(--text2);text-transform:uppercase;margin-bottom:5px;}
-.fi{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--text);font-family:var(--mono);font-size:0.8rem;outline:none;transition:all 0.2s;}
-.fi:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,212,255,0.07);}
-.fi::placeholder{color:var(--text3);}
-textarea.fi{resize:vertical;min-height:70px;line-height:1.5;}
-select.fi{cursor:pointer;}
+/* forms */
+.fg { margin-bottom: 12px; }
+.fl { display: block; font-family: monospace; font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+.fi {
+  width: 100%; background: var(--surface); border: 1px solid var(--border);
+  padding: 7px 10px; color: var(--text); font-family: monospace; font-size: 12px; outline: none;
+}
+.fi:focus { border-color: var(--border2); }
+.fi::placeholder { color: var(--faint); }
+textarea.fi { resize: vertical; min-height: 70px; line-height: 1.5; }
+select.fi { cursor: pointer; }
 
-/* ── Buttons ── */
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 18px;border:none;border-radius:6px;font-family:var(--sans);font-weight:700;font-size:0.8rem;cursor:pointer;transition:all 0.2s;}
-.btn:disabled{opacity:0.4;cursor:not-allowed;transform:none!important;}
-.bp{background:var(--accent);color:#000;}.bp:hover{background:#00eeff;box-shadow:var(--glow);transform:translateY(-1px);}
-.bg{background:transparent;color:var(--text2);border:1px solid var(--border);}.bg:hover{border-color:var(--accent);color:var(--accent);}
-.bd{background:transparent;color:var(--danger);border:1px solid rgba(255,68,85,0.3);}.bd:hover{background:rgba(255,68,85,0.08);}
-.bpu{background:var(--purple);color:#fff;}.bpu:hover{background:#c084fc;transform:translateY(-1px);}
-.bgr{background:var(--accent3);color:#000;}.bgr:hover{background:#00ffaa;transform:translateY(-1px);}
-.bw{width:100%;}
-.brow{display:flex;gap:8px;flex-wrap:wrap;}
-.sp{width:13px;height:13px;border:2px solid rgba(0,0,0,0.22);border-top-color:#000;border-radius:50%;animation:spin 0.7s linear infinite;display:none;}
-@keyframes spin{to{transform:rotate(360deg);}}
-.loading .sp{display:block;}.loading .bt{display:none;}
+/* buttons */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 7px 16px; border: 1px solid; font-family: inherit; font-weight: 700; font-size: 12px; cursor: pointer;
+}
+.btn:disabled { opacity: .4; cursor: not-allowed; }
+.bp  { background: var(--text); color: #fff; border-color: #000; }
+.bp:hover:not(:disabled)  { background: #333; }
+.bg  { background: var(--surface); color: var(--muted); border-color: var(--border2); }
+.bg:hover:not(:disabled)  { background: var(--border); color: var(--text); }
+.bd  { background: #fdf0f2; color: var(--err); border-color: var(--err); }
+.bd:hover:not(:disabled)  { background: #f8e0e4; }
+.bpu { background: #5a3090; color: #fff; border-color: #3a1870; }
+.bpu:hover:not(:disabled) { background: #3a1870; }
+.bgr { background: var(--ok); color: #fff; border-color: #1a3c20; }
+.bgr:hover:not(:disabled) { background: #1a3c20; }
+.bw { width: 100%; }
+.brow { display: flex; gap: 8px; flex-wrap: wrap; }
+.sp { width: 11px; height: 11px; border: 2px solid rgba(255,255,255,.3); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; display: none; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading .sp { display: block; } .loading .bt { display: none; }
 
-/* ── Alerts ── */
-.alert{padding:9px 12px;border-radius:6px;font-family:var(--mono);font-size:0.7rem;margin-bottom:14px;display:none;line-height:1.5;}
-.alert.show{display:block;animation:fadeUp 0.3s ease;}
-@keyframes fadeUp{from{opacity:0;transform:translateY(-4px);}to{opacity:1;transform:none;}}
-.ae{background:rgba(255,68,85,0.07);border:1px solid rgba(255,68,85,0.28);color:#ff8899;}
-.as{background:rgba(0,255,136,0.06);border:1px solid rgba(0,255,136,0.28);color:var(--accent3);}
-.ai{background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.22);color:var(--accent);}
+/* alerts */
+.alert { padding: 8px 12px; font-family: monospace; font-size: 11px; margin-bottom: 12px; border-left: 3px solid; display: none; line-height: 1.5; }
+.alert.show { display: block; }
+.ae { background: #fdf0f2; border-color: var(--err); color: var(--err); }
+.as { background: #f0f7f2; border-color: var(--ok);  color: var(--ok); }
+.ai { background: #f0f3f8; border-color: var(--accent); color: var(--accent); }
 
-/* ── Auth steps ── */
-.steps{display:flex;align-items:center;gap:6px;margin-bottom:22px;}
-.step{display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:0.56rem;color:var(--text3);letter-spacing:0.05em;}
-.snum{width:20px;height:20px;border-radius:50%;border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:0.56rem;transition:all 0.3s;}
-.step.active .snum{background:var(--accent);color:#000;border-color:var(--accent);box-shadow:var(--glow);}
-.step.done .snum{background:var(--accent3);color:#000;border-color:var(--accent3);}
-.sline{flex:1;height:1px;background:var(--border);}
+/* auth steps */
+.steps { display: flex; align-items: center; gap: 6px; margin-bottom: 18px; }
+.step { display: flex; align-items: center; gap: 5px; font-family: monospace; font-size: 10px; color: var(--faint); }
+.snum { width: 20px; height: 20px; border-radius: 50%; border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; }
+.step.active .snum { background: var(--text); color: #fff; border-color: var(--text); }
+.step.done .snum { background: var(--ok); color: #fff; border-color: var(--ok); }
+.step.active { color: var(--text); }
+.step.done { color: var(--ok); }
+.sline { flex: 1; height: 1px; background: var(--border); }
 
-/* ── OTP ── */
-.orow{display:flex;gap:7px;justify-content:center;margin:12px 0;}
-.od{width:44px;height:52px;background:var(--bg2);border:1px solid var(--border);border-radius:7px;text-align:center;font-family:var(--mono);font-size:1.2rem;font-weight:700;color:var(--accent);outline:none;transition:all 0.2s;}
-.od:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,212,255,0.1);}
+/* OTP boxes */
+.orow { display: flex; gap: 6px; justify-content: center; margin: 12px 0; }
+.od {
+  width: 42px; height: 50px; border: 1px solid var(--border); background: var(--surface);
+  text-align: center; font-family: monospace; font-size: 20px; font-weight: 700; color: var(--text); outline: none;
+}
+.od:focus { border-color: var(--border2); }
 
-/* ── PW strength ── */
-.pws{margin-top:5px;display:none;}
-.pws.show{display:block;}
-.pwbg{height:3px;background:var(--border);border-radius:2px;margin-bottom:4px;overflow:hidden;}
-.pwbf{height:100%;border-radius:2px;transition:all 0.3s;}
-.pwh{font-family:var(--mono);font-size:0.58rem;color:var(--text3);}
+/* password strength */
+.pws { margin-top: 4px; display: none; }
+.pws.show { display: block; }
+.pwbg { height: 3px; background: var(--border); margin-bottom: 3px; overflow: hidden; }
+.pwbf { height: 100%; transition: all .3s; }
+.pwh { font-family: monospace; font-size: 10px; color: var(--faint); }
 
-/* ── Secret box ── */
-.sbox{background:var(--bg);border:1px solid var(--border2);border-radius:7px;padding:12px;margin:12px 0;font-family:var(--mono);font-size:0.8rem;letter-spacing:0.1em;color:var(--accent3);text-align:center;word-break:break-all;}
+/* OTP secret box */
+.sbox { background: var(--surface); border: 1px solid var(--border); padding: 10px; margin: 10px 0; font-family: monospace; font-size: 13px; letter-spacing: .1em; color: var(--ok); text-align: center; word-break: break-all; }
 
-/* ── Dash header ── */
-.dhead{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px;}
-.wlabel{font-size:0.56rem;font-family:var(--mono);color:var(--accent);letter-spacing:0.15em;text-transform:uppercase;margin-bottom:3px;}
-.wname{font-size:1.75rem;font-weight:800;letter-spacing:-0.04em;}
+/* dashboard header */
+.dhead { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
+.wlabel { font-family: monospace; font-size: 10px; color: var(--faint); text-transform: uppercase; margin-bottom: 2px; }
+.wname { font-size: 18px; font-weight: 700; }
+.wname span { color: var(--text); }
 
-/* ── Stats ── */
-.srow{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px;}
-.sc{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;position:relative;overflow:hidden;}
-.sc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
-.sc.c::before{background:linear-gradient(90deg,var(--accent),transparent);}
-.sc.g::before{background:linear-gradient(90deg,var(--accent3),transparent);}
-.sc.r::before{background:linear-gradient(90deg,var(--danger),transparent);}
-.sc.y::before{background:linear-gradient(90deg,var(--warn),transparent);}
-.sc.p::before{background:linear-gradient(90deg,var(--purple),transparent);}
-.slb{font-family:var(--mono);font-size:0.55rem;letter-spacing:0.12em;color:var(--text3);text-transform:uppercase;margin-bottom:6px;}
-.sv{font-family:var(--mono);font-size:1.6rem;font-weight:700;line-height:1;}
-.sc.c .sv{color:var(--accent);}.sc.g .sv{color:var(--accent3);}.sc.r .sv{color:var(--danger);}.sc.y .sv{color:var(--warn);}.sc.p .sv{color:var(--purple);}
+/* auth status badges */
+.asbar { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 14px; }
+.asi { display: flex; align-items: center; gap: 4px; padding: 3px 9px; font-family: monospace; font-size: 10px; border: 1px solid var(--border); background: var(--surface); color: var(--muted); }
+.asi.ok { border-color: #90c0a0; background: #f0f7f2; color: var(--ok); }
 
-/* ── Info table ── */
-.itable{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px;font-family:var(--mono);font-size:0.7rem;}
-.irow{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);}
-.irow:last-child{border-bottom:none;}
-.ik{color:var(--text3);}.iv{color:var(--accent);}
+/* stat cards — no colored tops */
+.srow { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1px; margin-bottom: 16px; background: var(--border); border: 1px solid var(--border); }
+.sc { background: var(--white); padding: 12px; }
+.slb { font-family: monospace; font-size: 9px; letter-spacing: .06em; text-transform: uppercase; color: var(--faint); margin-bottom: 5px; }
+.sv { font-family: monospace; font-size: 22px; font-weight: 700; line-height: 1; color: var(--text); }
 
-/* ── Events list ── */
-.evlist{list-style:none;}
-.evi{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:0.68rem;}
-.evi:last-child{border-bottom:none;}
-.evd{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
-.evd.ok{background:var(--accent3);box-shadow:0 0 5px var(--accent3);}
-.evd.fail{background:var(--danger);box-shadow:0 0 5px var(--danger);}
-.evt{color:var(--text2);flex:1;}.evt2{color:var(--text3);font-size:0.58rem;}
+/* info table */
+.itable { background: var(--surface); border: 1px solid var(--border); padding: 10px; font-family: monospace; font-size: 11px; }
+.irow { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid var(--border); }
+.irow:last-child { border-bottom: none; }
+.ik { color: var(--faint); } .iv { color: var(--text); font-weight: 700; }
 
-/* ── Badges ── */
-.badges{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;}
-.badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-family:var(--mono);font-size:0.58rem;letter-spacing:0.04em;border:1px solid;}
-.bc{border-color:rgba(0,212,255,0.3);color:var(--accent);background:rgba(0,212,255,0.05);}
-.bg2x{border-color:rgba(0,255,136,0.3);color:var(--accent3);background:rgba(0,255,136,0.05);}
-.by{border-color:rgba(255,187,0,0.3);color:var(--warn);background:rgba(255,187,0,0.05);}
-.bpx{border-color:rgba(168,85,247,0.3);color:var(--purple);background:rgba(168,85,247,0.05);}
+/* events list */
+.evlist { list-style: none; }
+.evi { display: flex; align-items: center; gap: 7px; padding: 5px 0; border-bottom: 1px solid var(--border); font-family: monospace; font-size: 11px; }
+.evi:last-child { border-bottom: none; }
+.evd { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.evd.ok { background: var(--ok); } .evd.fail { background: var(--err); }
+.evt { color: var(--muted); flex: 1; } .evt2 { color: var(--faint); font-size: 9px; }
 
-/* ── Crypto output ── */
-.cout{background:var(--bg);border:1px solid var(--border2);border-radius:7px;padding:12px;font-family:var(--mono);font-size:0.68rem;color:var(--accent3);word-break:break-all;line-height:1.6;min-height:48px;white-space:pre-wrap;}
-.cout.red{color:var(--danger);}
-.clb{font-family:var(--mono);font-size:0.55rem;letter-spacing:0.12em;color:var(--text3);text-transform:uppercase;margin-bottom:4px;margin-top:12px;}
+/* badges */
+.badges { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
+.badge { display: inline-flex; align-items: center; padding: 2px 8px; font-family: monospace; font-size: 10px; border: 1px solid var(--border); color: var(--muted); background: var(--surface); }
 
-/* ── Process steps ── */
-.psteps{margin:12px 0;}
-.pstep{display:flex;align-items:flex-start;gap:8px;padding:9px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;margin-bottom:6px;font-family:var(--mono);font-size:0.68rem;line-height:1.5;transition:all 0.3s;}
-.pstep.done{border-color:rgba(0,255,136,0.28);background:rgba(0,255,136,0.03);}
-.pstep.act{border-color:rgba(0,212,255,0.38);background:rgba(0,212,255,0.04);animation:pa 1s infinite;}
-@keyframes pa{0%,100%{border-color:rgba(0,212,255,0.28);}50%{border-color:rgba(0,212,255,0.75);}}
-.picon{font-size:0.9rem;flex-shrink:0;margin-top:1px;}
-.pbody{flex:1;}
-.pname{font-weight:700;color:var(--text);margin-bottom:2px;}
-.pdet{color:var(--text2);font-size:0.62rem;}
-.pval{color:var(--accent3);font-size:0.62rem;margin-top:3px;word-break:break-all;}
-.sbadge{font-size:0.55rem;padding:2px 8px;border-radius:10px;flex-shrink:0;}
-.sok{background:rgba(0,255,136,0.12);color:var(--accent3);}
-.spend{background:rgba(0,212,255,0.1);color:var(--accent);}
-.swait{background:rgba(46,69,96,0.5);color:var(--text3);}
+/* crypto output */
+.cout { background: #1e1e1e; border: 1px solid #444; padding: 10px; font-family: monospace; font-size: 11px; color: #7abf8a; word-break: break-all; line-height: 1.6; min-height: 44px; white-space: pre-wrap; }
+.cout.red { color: #d08080; }
+.clb { font-family: monospace; font-size: 9px; letter-spacing: .08em; text-transform: uppercase; color: var(--faint); margin-bottom: 4px; margin-top: 10px; }
 
-/* ── Auth status bar ── */
-.asbar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;}
-.asi{display:flex;align-items:center;gap:6px;padding:6px 11px;border-radius:6px;font-family:var(--mono);font-size:0.62rem;border:1px solid var(--border);background:var(--bg2);}
-.asi.ok{border-color:rgba(0,255,136,0.28);background:rgba(0,255,136,0.04);color:var(--accent3);}
+/* process steps — no emojis, plain */
+.psteps { margin: 10px 0; }
+.pstep { display: flex; align-items: flex-start; gap: 7px; padding: 8px; background: var(--surface); border: 1px solid var(--border); margin-bottom: 3px; font-family: monospace; font-size: 11px; line-height: 1.5; }
+.pstep.done { border-color: #90c0a0; background: #f0f7f2; }
+.pstep.act  { border-color: var(--border2); background: #f4f4f2; }
+.picon { font-size: 11px; flex-shrink: 0; margin-top: 1px; color: var(--faint); font-style: normal; }
+.pbody { flex: 1; }
+.pname { font-weight: 700; color: var(--text); margin-bottom: 1px; }
+.pdet  { color: var(--muted); font-size: 10px; }
+.pval  { color: var(--ok); font-size: 10px; margin-top: 2px; word-break: break-all; }
+.sbadge { font-size: 9px; padding: 1px 7px; border: 1px solid; font-family: monospace; flex-shrink: 0; }
+.sok   { border-color: #90c0a0; color: var(--ok);   background: #f0f7f2; }
+.spend { border-color: var(--border2); color: var(--muted); background: var(--surface); }
+.swait { border-color: var(--border); color: var(--faint); background: var(--surface); }
 
-/* ── Key exchange ── */
-.kvis{display:flex;align-items:center;gap:10px;margin:13px 0;}
-.kparty{flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;}
-.kpname{font-family:var(--mono);font-size:0.56rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);margin-bottom:6px;}
-.kpval{font-family:var(--mono);font-size:0.64rem;color:var(--accent);word-break:break-all;line-height:1.4;}
-.shbox{background:rgba(0,255,136,0.05);border:1px solid rgba(0,255,136,0.22);border-radius:8px;padding:12px;text-align:center;margin-top:12px;}
-.shlbl{font-family:var(--mono);font-size:0.56rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent3);margin-bottom:4px;}
-.shval{font-family:var(--mono);font-size:0.7rem;color:var(--accent3);word-break:break-all;}
+/* key exchange */
+.kvis { display: flex; align-items: center; gap: 10px; margin: 12px 0; }
+.kparty { flex: 1; background: var(--surface); border: 1px solid var(--border); padding: 10px; text-align: center; }
+.kpname { font-family: monospace; font-size: 9px; text-transform: uppercase; color: var(--faint); margin-bottom: 5px; }
+.kpval  { font-family: monospace; font-size: 10px; color: var(--text); word-break: break-all; line-height: 1.4; }
+.shbox  { background: #f0f7f2; border: 1px solid #90c0a0; padding: 10px; text-align: center; margin-top: 10px; }
+.shlbl  { font-family: monospace; font-size: 9px; text-transform: uppercase; color: var(--ok); margin-bottom: 3px; }
+.shval  { font-family: monospace; font-size: 11px; color: var(--ok); word-break: break-all; }
 
-/* ── Messages ── */
-.mbub{padding:9px 13px;border-radius:8px;font-family:var(--mono);font-size:0.72rem;line-height:1.6;margin-bottom:7px;word-break:break-all;}
-.mpl{background:rgba(0,212,255,0.05);border:1px solid rgba(0,212,255,0.18);color:var(--accent);}
-.mci{background:rgba(168,85,247,0.05);border:1px solid rgba(168,85,247,0.18);color:var(--purple);}
-.mde{background:rgba(0,255,136,0.05);border:1px solid rgba(0,255,136,0.18);color:var(--accent3);}
-.mlb{font-size:0.56rem;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px;opacity:0.65;}
+/* messaging */
+.mbub { padding: 8px 12px; font-family: monospace; font-size: 11px; line-height: 1.6; margin-bottom: 5px; word-break: break-all; }
+.mpl  { background: #f0f3f8; border: 1px solid #a0b8d8; color: var(--accent); }
+.mci  { background: #f4f0f8; border: 1px solid #b0a0c8; color: #5a3090; }
+.mde  { background: #f0f7f2; border: 1px solid #90c0a0; color: var(--ok); }
+.mlb  { font-size: 9px; text-transform: uppercase; margin-bottom: 3px; opacity: .6; }
 
-.link{color:var(--accent);cursor:pointer;text-decoration:underline;text-decoration-color:rgba(0,212,255,0.28);font-size:0.8rem;transition:all 0.2s;}
-.link:hover{text-decoration-color:var(--accent);}
-.ctr{text-align:center;margin-top:12px;}
-.divider{display:flex;align-items:center;gap:8px;margin:14px 0;color:var(--text3);font-family:var(--mono);font-size:0.58rem;}
-.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border);}
-.su{animation:su 0.4s ease;}
-@keyframes su{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:none;}}
-
-/* ── Auth wrap center ── */
-.auth-center{display:flex;align-items:center;justify-content:center;min-height:100%;}
-.auth-box{width:100%;max-width:460px;}
+.link { color: var(--accent); cursor: pointer; text-decoration: underline; font-size: 11px; font-family: monospace; }
+.link:hover { color: var(--text); }
+.ctr { text-align: center; margin-top: 10px; }
+.divider { display: flex; align-items: center; gap: 8px; margin: 12px 0; color: var(--faint); font-family: monospace; font-size: 10px; }
+.divider::before,.divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 </style>
 </head>
 <body>
 <div class="shell">
 
-<!-- Header -->
-<header class="hdr">
-  <div class="logo">
-    <svg viewBox="0 0 32 32" fill="none">
-      <path d="M16 2L3 7v9c0 7.4 5.3 14.3 13 16 7.7-1.7 13-8.6 13-16V7L16 2z" fill="rgba(0,212,255,0.08)" stroke="#00d4ff" stroke-width="1.5"/>
-      <path d="M11 16l3.5 3.5L21 13" stroke="#00ff88" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-    <div class="logo-txt">Secure<span>Auth</span></div>
-  </div>
+<header>
+  <div class="logo">SecureAuth</div>
   <div class="hdr-right">
-    <div class="hstatus"><div class="hdot"></div><span id="hdrStatus">SYSTEM SECURE</span></div>
-    <a class="hbtn" href="/simulator.html" target="_blank">Attack Simulator</a>
+    <span id="hdrStatus">System secure</span>
+    <a class="hbtn" href="http://localhost:8000/simulator" target="_blank">Attack Simulator</a>
     <span class="hbtn red" id="logoutBtn" style="display:none" onclick="doLogout()">Logout</span>
   </div>
 </header>
 
-<!-- Body -->
 <div class="body-row">
+<div class="content" id="mainContent">
 
-  <!-- Main content -->
-  <div class="content" id="mainContent">
+  <!-- AUTH -->
+  <div class="auth-center" id="authWrap">
+    <div class="auth-box">
+      <div class="card">
+        <div class="tabs">
+          <button class="tab active" onclick="switchTab('login')">Login</button>
+          <button class="tab" onclick="switchTab('register')">Register</button>
+        </div>
+        <div class="alert" id="authAlert"></div>
 
-    <!-- AUTH -->
-    <div class="auth-center" id="authWrap">
-      <div class="auth-box su">
-        <div class="card">
-          <div class="cscan"></div>
-          <div class="tabs">
-            <div class="tab active" onclick="switchTab('login')">Login</div>
-            <div class="tab" onclick="switchTab('register')">Register</div>
+        <div id="loginPanel">
+          <div class="steps">
+            <div class="step active" id="st1"><div class="snum">1</div><span>CHALLENGE</span></div>
+            <div class="sline"></div>
+            <div class="step" id="st2"><div class="snum">2</div><span>OTP</span></div>
+            <div class="sline"></div>
+            <div class="step" id="st3"><div class="snum">3</div><span>ACCESS</span></div>
           </div>
-          <div class="alert" id="authAlert"></div>
-
-          <!-- LOGIN -->
-          <div id="loginPanel">
-            <div class="steps">
-              <div class="step active" id="st1"><div class="snum">1</div><span>CHALLENGE</span></div>
-              <div class="sline"></div>
-              <div class="step" id="st2"><div class="snum">2</div><span>OTP</span></div>
-              <div class="sline"></div>
-              <div class="step" id="st3"><div class="snum">3</div><span>ACCESS</span></div>
-            </div>
-            <div id="ls1">
-              <div class="clabel">Step 1 of 2</div>
-              <div class="ctitle">Challenge–Response<br>Authentication</div>
-              <div class="fg"><label class="fl">Username</label><input class="fi" id="lUser" placeholder="your_username" autocomplete="username"></div>
-              <div class="fg"><label class="fl">Password</label><input type="password" class="fi" id="lPass" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" autocomplete="current-password"></div>
-              <button class="btn bp bw" id="loginBtn" onclick="startLogin()"><span class="bt">Request Challenge</span><div class="sp"></div></button>
-            </div>
-            <div id="ls2" style="display:none">
-              <div class="clabel">Step 2 of 2</div>
-              <div class="ctitle">Two-Factor<br>Verification</div>
-              <div class="alert ai show">Enter the 6-digit code from your authenticator app.</div>
-              <div class="orow">
-                <input class="od" maxlength="1" id="o0" oninput="oi(this,0)" onkeydown="ok(event,0)">
-                <input class="od" maxlength="1" id="o1" oninput="oi(this,1)" onkeydown="ok(event,1)">
-                <input class="od" maxlength="1" id="o2" oninput="oi(this,2)" onkeydown="ok(event,2)">
-                <input class="od" maxlength="1" id="o3" oninput="oi(this,3)" onkeydown="ok(event,3)">
-                <input class="od" maxlength="1" id="o4" oninput="oi(this,4)" onkeydown="ok(event,4)">
-                <input class="od" maxlength="1" id="o5" oninput="oi(this,5)" onkeydown="ok(event,5)">
-              </div>
-              <button class="btn bp bw" id="otpBtn" onclick="verifyOTP()"><span class="bt">Verify &amp; Login</span><div class="sp"></div></button>
-              <div class="ctr"><span class="link" onclick="resetLogin()">Back</span></div>
-            </div>
+          <div id="ls1">
+            <div class="clabel">Step 1 of 2</div>
+            <div class="ctitle">Challenge-Response Auth</div>
+            <div class="fg"><label class="fl">Username</label><input class="fi" id="lUser" placeholder="your_username" autocomplete="username"></div>
+            <div class="fg"><label class="fl">Password</label><input type="password" class="fi" id="lPass" placeholder="••••••••••••" autocomplete="current-password"></div>
+            <button class="btn bp bw" id="loginBtn" onclick="startLogin()"><span class="bt">Request Challenge</span><div class="sp"></div></button>
           </div>
-
-          <!-- REGISTER -->
-          <div id="registerPanel" style="display:none">
-            <div id="regForm">
-              <div class="clabel">New Account</div>
-              <div class="ctitle">Create Secure<br>Identity</div>
-              <div class="fg"><label class="fl">Username</label><input class="fi" id="rUser" placeholder="your_username"></div>
-              <div class="fg"><label class="fl">Email</label><input type="email" class="fi" id="rEmail" placeholder="you@example.com"></div>
-              <div class="fg">
-                <label class="fl">Password</label>
-                <input type="password" class="fi" id="rPass" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" oninput="checkPw(this.value)">
-                <div class="pws" id="pws"><div class="pwbg"><div class="pwbf" id="pwb"></div></div><div class="pwh" id="pwh"></div></div>
-              </div>
-              <div class="badges"><div class="badge bc">PBKDF2 Salted</div><div class="badge bg2x">TOTP 2FA</div><div class="badge by">Anti-Replay</div></div>
-              <div class="mt"><button class="btn bp bw" id="regBtn" onclick="doRegister()"><span class="bt">Create Account</span><div class="sp"></div></button></div>
+          <div id="ls2" style="display:none">
+            <div class="clabel">Step 2 of 2</div>
+            <div class="ctitle">Two-Factor Verification</div>
+            <div class="alert ai show">Enter the 6-digit code from your authenticator app.</div>
+            <div class="orow">
+              <input class="od" maxlength="1" id="o0" oninput="oi(this,0)" onkeydown="ok(event,0)">
+              <input class="od" maxlength="1" id="o1" oninput="oi(this,1)" onkeydown="ok(event,1)">
+              <input class="od" maxlength="1" id="o2" oninput="oi(this,2)" onkeydown="ok(event,2)">
+              <input class="od" maxlength="1" id="o3" oninput="oi(this,3)" onkeydown="ok(event,3)">
+              <input class="od" maxlength="1" id="o4" oninput="oi(this,4)" onkeydown="ok(event,4)">
+              <input class="od" maxlength="1" id="o5" oninput="oi(this,5)" onkeydown="ok(event,5)">
             </div>
-            <div id="otpSetup" style="display:none">
-              <div class="clabel">2FA Setup</div>
-              <div class="ctitle">Authenticator Setup</div>
-              <div class="alert as show">Account created! Add the secret to your authenticator app.</div>
-              <div class="sbox" id="otpSec"></div>
-              <div style="text-align:center;color:var(--text2);font-size:0.76rem;margin:9px 0;">Open Google Authenticator / Authy → Add account → Enter key manually</div>
-              <button class="btn bp bw mt" onclick="switchTab('login')">Proceed to Login</button>
-            </div>
+            <button class="btn bp bw" id="otpBtn" onclick="verifyOTP()"><span class="bt">Verify &amp; Login</span><div class="sp"></div></button>
+            <div class="ctr"><span class="link" onclick="resetLogin()">Back</span></div>
           </div>
         </div>
-      </div>
-    </div>
 
-    <!-- DASHBOARD -->
-    <div id="dashWrap" style="display:none">
-      <div class="dhead">
-        <div><div class="wlabel">Authenticated</div><div class="wname">Welcome, <span style="color:var(--accent)" id="dashUser"></span></div></div>
-        <button class="btn bd" onclick="doLogout()">Logout</button>
-      </div>
-
-      <div class="asbar">
-        <div class="asi ok">🔐 Challenge-Response</div>
-        <div class="asi ok">📱 TOTP Verified</div>
-        <div class="asi ok">🛡 Anti-Replay</div>
-        <div class="asi ok">🔑 Session Issued</div>
-        <div class="asi ok">🔒 Secure Channel</div>
-      </div>
-
-      <div class="srow">
-        <div class="sc c"><div class="slb">Total Logins</div><div class="sv" id="stLogins">—</div></div>
-        <div class="sc g"><div class="slb">Session</div><div class="sv" style="font-size:0.82rem;padding-top:6px">SECURE</div></div>
-        <div class="sc r"><div class="slb">Failed 24h</div><div class="sv" id="stFails">—</div></div>
-        <div class="sc y"><div class="slb">Replays Blocked</div><div class="sv" id="stReplays">—</div></div>
-        <div class="sc p"><div class="slb">Keys Generated</div><div class="sv" id="stKeys">0</div></div>
-      </div>
-
-      <div class="dtabs">
-        <div class="dtab active" onclick="sd('overview')">Overview</div>
-        <div class="dtab" onclick="sd('encrypt')">Encryption</div>
-        <div class="dtab" onclick="sd('keyex')">Key Exchange</div>
-        <div class="dtab" onclick="sd('msg')">Secure Messaging</div>
-        <div class="dtab" onclick="sd('flow')">Auth Flow</div>
-      </div>
-
-      <!-- OVERVIEW -->
-      <div class="dpanel show" id="dp-overview">
-        <div class="g2">
-          <div class="card">
-            <div class="clabel">Session Info</div><div class="stitle">Current Session</div>
-            <div class="itable">
-              <div class="irow"><span class="ik">User</span><span class="iv" id="iUser">—</span></div>
-              <div class="irow"><span class="ik">Email</span><span class="iv" id="iEmail">—</span></div>
-              <div class="irow"><span class="ik">IP Address</span><span class="iv" id="iIP">—</span></div>
-              <div class="irow"><span class="ik">Expires</span><span class="iv" id="iExp">—</span></div>
-              <div class="irow"><span class="ik">Auth Method</span><span class="iv">HMAC-SHA256 + TOTP</span></div>
-              <div class="irow"><span class="ik">Token Storage</span><span class="iv">SHA-256 Hash</span></div>
+        <div id="registerPanel" style="display:none">
+          <div id="regForm">
+            <div class="clabel">New Account</div>
+            <div class="ctitle">Create Identity</div>
+            <div class="fg"><label class="fl">Username</label><input class="fi" id="rUser" placeholder="your_username"></div>
+            <div class="fg"><label class="fl">Email</label><input type="email" class="fi" id="rEmail" placeholder="you@example.com"></div>
+            <div class="fg">
+              <label class="fl">Password</label>
+              <input type="password" class="fi" id="rPass" placeholder="••••••••••••" oninput="checkPw(this.value)">
+              <div class="pws" id="pws"><div class="pwbg"><div class="pwbf" id="pwb"></div></div><div class="pwh" id="pwh"></div></div>
             </div>
             <div class="badges">
-              <div class="badge bc">Challenge-Response</div><div class="badge bg2x">TOTP Verified</div>
-              <div class="badge by">Anti-Replay</div><div class="badge bpx">PBKDF2 310k</div>
+              <div class="badge">PBKDF2 Salted</div>
+              <div class="badge">TOTP 2FA</div>
+              <div class="badge">Anti-Replay</div>
             </div>
+            <div class="mt"><button class="btn bp bw" id="regBtn" onclick="doRegister()"><span class="bt">Create Account</span><div class="sp"></div></button></div>
           </div>
-          <div class="card">
-            <div class="clabel">Audit Trail</div><div class="stitle">Recent Events</div>
-            <ul class="evlist" id="evList"><li class="evi" style="color:var(--text3);font-family:var(--mono);font-size:0.68rem">Loading...</li></ul>
-          </div>
-        </div>
-      </div>
-
-      <!-- ENCRYPTION -->
-      <div class="dpanel" id="dp-encrypt">
-        <div class="g2">
-          <div class="card">
-            <div class="clabel">AES-256-GCM</div><div class="stitle">Encrypt Message</div>
-            <div class="fg"><label class="fl">Plaintext</label><textarea class="fi" id="encPT" placeholder="Enter your secret message..."></textarea></div>
-            <div class="fg"><label class="fl">Key (blank = auto-generate)</label><input class="fi" id="encK" placeholder="256-bit hex key"></div>
-            <div class="brow">
-              <button class="btn bp" onclick="doEncrypt()">Encrypt</button>
-              <button class="btn bg" onclick="genKey()">Generate Key</button>
-            </div>
-            <div class="psteps" id="encProc" style="display:none"></div>
-            <div id="encOut" style="display:none">
-              <div class="clb">Ciphertext (Base64)</div><div class="cout" id="encCT"></div>
-              <div class="clb">IV / Nonce (Hex)</div><div class="cout" id="encIV"></div>
-              <div class="clb">Auth Tag (Hex)</div><div class="cout" id="encTag"></div>
-            </div>
-          </div>
-          <div class="card">
-            <div class="clabel">AES-256-GCM</div><div class="stitle">Decrypt Message</div>
-            <div class="fg"><label class="fl">Ciphertext (Base64)</label><textarea class="fi" id="decCT" placeholder="Paste ciphertext..."></textarea></div>
-            <div class="fg"><label class="fl">Key (Hex)</label><input class="fi" id="decK" placeholder="256-bit hex key"></div>
-            <div class="fg"><label class="fl">IV (Hex)</label><input class="fi" id="decIV" placeholder="96-bit IV"></div>
-            <button class="btn bpu bw" onclick="doDecrypt()">Decrypt</button>
-            <div class="clb">Result</div><div class="cout" id="decOut" style="color:var(--accent3)">—</div>
-            <div class="alert" id="decAlert" style="margin-top:9px"></div>
-          </div>
-        </div>
-        <div class="card mt">
-          <div class="clabel">How it works</div><div class="stitle">AES-256-GCM Properties</div>
-          <div class="psteps">
-            <div class="pstep done"><span class="picon">🔑</span><div class="pbody"><div class="pname">256-bit Key</div><div class="pdet">crypto.getRandomValues() — cryptographically secure</div></div><span class="sbadge sok">SECURE</span></div>
-            <div class="pstep done"><span class="picon">🎲</span><div class="pbody"><div class="pname">Unique IV per message</div><div class="pdet">96-bit random nonce — never reused</div></div><span class="sbadge sok">UNIQUE</span></div>
-            <div class="pstep done"><span class="picon">🔒</span><div class="pbody"><div class="pname">Authenticated Encryption</div><div class="pdet">GCM: confidentiality + integrity — tamper always detected</div></div><span class="sbadge sok">AUTHENTICATED</span></div>
-            <div class="pstep done"><span class="picon">🏷</span><div class="pbody"><div class="pname">128-bit Auth Tag</div><div class="pdet">Decryption fails if any bit modified</div></div><span class="sbadge sok">INTEGRITY</span></div>
+          <div id="otpSetup" style="display:none">
+            <div class="clabel">2FA Setup</div>
+            <div class="ctitle">Authenticator Setup</div>
+            <div class="alert as show">Account created. Save this secret in your authenticator app.</div>
+            <div class="sbox" id="otpSec"></div>
+            <p style="font-family:monospace;font-size:10px;color:var(--muted);text-align:center;line-height:1.7;">Google Authenticator / Authy — Add account — Enter key manually</p>
+            <button class="btn bp bw mt" onclick="switchTab('login')">Go to Login</button>
           </div>
         </div>
       </div>
+    </div>
+  </div>
 
-      <!-- KEY EXCHANGE -->
-      <div class="dpanel" id="dp-keyex">
-        <div class="card" style="margin-bottom:14px">
-          <div class="clabel">ECDH P-256</div><div class="stitle">Diffie-Hellman Key Exchange</div>
-          <p style="font-size:0.78rem;color:var(--text2);margin-bottom:16px;line-height:1.6;">Alice and Bob generate key pairs, exchange only public keys, and independently compute the same shared secret — private key never transmitted.</p>
-          <button class="btn bp" id="dhBtn" onclick="doDH()"><span class="bt">Run Key Exchange</span><div class="sp"></div></button>
-          <div id="dhProc" style="display:none;margin-top:16px">
-            <div class="psteps" id="dhSteps"></div>
-            <div class="kvis" id="kvis" style="display:none">
-              <div class="kparty"><div class="kpname">Alice (Client)</div><div class="clb">Public Key</div><div class="kpval" id="aPub">—</div></div>
-              <div style="text-align:center;color:var(--text3);font-size:1.3rem;flex-shrink:0">⇄</div>
-              <div class="kparty"><div class="kpname">Bob (Server)</div><div class="clb">Public Key</div><div class="kpval" id="bPub">—</div></div>
-            </div>
-            <div class="shbox" id="shbox" style="display:none">
-              <div class="shlbl">Shared Secret — Both Sides Match</div>
-              <div class="shval" id="shval">—</div>
-              <div style="font-family:var(--mono);font-size:0.6rem;color:var(--text2);margin-top:6px">Attacker with only public keys cannot compute this</div>
-            </div>
+  <!-- DASHBOARD -->
+  <div id="dashWrap" style="display:none">
+    <div class="dhead">
+      <div>
+        <div class="wlabel">Authenticated Session</div>
+        <div class="wname">Welcome, <span id="dashUser"></span></div>
+      </div>
+      <button class="btn bd" onclick="doLogout()">Logout</button>
+    </div>
+
+    <div class="asbar">
+      <div class="asi ok">Challenge-Response</div>
+      <div class="asi ok">TOTP Verified</div>
+      <div class="asi ok">Anti-Replay</div>
+      <div class="asi ok">Session Issued</div>
+      <div class="asi ok">Secure Channel</div>
+    </div>
+
+    <div class="srow">
+      <div class="sc"><div class="slb">Total Logins</div><div class="sv" id="stLogins">—</div></div>
+      <div class="sc"><div class="slb">Session</div><div class="sv" style="font-size:13px;padding-top:5px">ACTIVE</div></div>
+      <div class="sc"><div class="slb">Failed 24h</div><div class="sv" id="stFails">—</div></div>
+      <div class="sc"><div class="slb">Replays Blocked</div><div class="sv" id="stReplays">—</div></div>
+      <div class="sc"><div class="slb">Keys Generated</div><div class="sv" id="stKeys">0</div></div>
+    </div>
+
+    <div class="dtabs">
+      <button class="dtab active" onclick="sd('overview')">Overview</button>
+      <button class="dtab" onclick="sd('encrypt')">Encryption</button>
+      <button class="dtab" onclick="sd('keyex')">Key Exchange</button>
+      <button class="dtab" onclick="sd('msg')">Secure Messaging</button>
+      <button class="dtab" onclick="sd('flow')">Auth Flow</button>
+    </div>
+
+    <!-- overview -->
+    <div class="dpanel show" id="dp-overview">
+      <div class="g2">
+        <div class="card">
+          <div class="clabel">Session Info</div>
+          <div class="stitle">Current Session</div>
+          <div class="itable">
+            <div class="irow"><span class="ik">User</span><span class="iv" id="iUser">—</span></div>
+            <div class="irow"><span class="ik">Email</span><span class="iv" id="iEmail">—</span></div>
+            <div class="irow"><span class="ik">IP Address</span><span class="iv" id="iIP">—</span></div>
+            <div class="irow"><span class="ik">Expires</span><span class="iv" id="iExp">—</span></div>
+            <div class="irow"><span class="ik">Auth Method</span><span class="iv">HMAC-SHA256 + TOTP</span></div>
+            <div class="irow"><span class="ik">Token Storage</span><span class="iv">SHA-256 Hash</span></div>
+          </div>
+          <div class="badges">
+            <div class="badge">Challenge-Response</div>
+            <div class="badge">TOTP Verified</div>
+            <div class="badge">Anti-Replay</div>
+            <div class="badge">PBKDF2 310k</div>
           </div>
         </div>
         <div class="card">
-          <div class="clabel">Key Generation</div><div class="stitle">Generate Asymmetric Key Pair</div>
-          <div class="fg"><label class="fl">Algorithm</label>
-            <select class="fi" id="kAlgo">
-              <option value="EC256">ECDSA P-256 — Digital Signatures</option>
-              <option value="EC384">ECDSA P-384 — Higher Security</option>
-              <option value="RSA">RSA-2048 — Traditional</option>
-            </select>
+          <div class="clabel">Audit Trail</div>
+          <div class="stitle">Recent Events</div>
+          <ul class="evlist" id="evList"><li class="evi" style="color:var(--faint);font-family:monospace">Loading...</li></ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- encrypt -->
+    <div class="dpanel" id="dp-encrypt">
+      <div class="g2">
+        <div class="card">
+          <div class="clabel">AES-256-GCM</div>
+          <div class="stitle">Encrypt Message</div>
+          <div class="fg"><label class="fl">Plaintext</label><textarea class="fi" id="encPT" placeholder="Enter your secret message..."></textarea></div>
+          <div class="fg"><label class="fl">Key (blank = auto-generate)</label><input class="fi" id="encK" placeholder="256-bit hex key"></div>
+          <div class="brow">
+            <button class="btn bp" onclick="doEncrypt()">Encrypt</button>
+            <button class="btn bg" onclick="genKey()">Generate Key</button>
           </div>
-          <button class="btn bgr" id="kpBtn" onclick="genKP()"><span class="bt">Generate Key Pair</span><div class="sp"></div></button>
-          <div id="kpOut" style="display:none;margin-top:13px">
-            <div class="g2">
-              <div><div class="clb">Public Key (PEM)</div><div class="cout" id="pubOut" style="font-size:0.6rem;max-height:110px;overflow-y:auto"></div></div>
-              <div><div class="clb">Private Key (PEM)</div><div class="cout red" id="privOut" style="font-size:0.6rem;max-height:110px;overflow-y:auto"></div></div>
-            </div>
-            <div class="alert ai show mt">Private key shown for demo only — never expose in production.</div>
+          <div class="psteps" id="encProc" style="display:none"></div>
+          <div id="encOut" style="display:none">
+            <div class="clb">Ciphertext (Base64)</div><div class="cout" id="encCT"></div>
+            <div class="clb">IV / Nonce (Hex)</div><div class="cout" id="encIV"></div>
+            <div class="clb">Auth Tag (Hex)</div><div class="cout" id="encTag"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="clabel">AES-256-GCM</div>
+          <div class="stitle">Decrypt Message</div>
+          <div class="fg"><label class="fl">Ciphertext (Base64)</label><textarea class="fi" id="decCT" placeholder="Paste ciphertext..."></textarea></div>
+          <div class="fg"><label class="fl">Key (Hex)</label><input class="fi" id="decK" placeholder="256-bit hex key"></div>
+          <div class="fg"><label class="fl">IV (Hex)</label><input class="fi" id="decIV" placeholder="96-bit IV"></div>
+          <button class="btn bpu bw" onclick="doDecrypt()">Decrypt</button>
+          <div class="clb">Result</div><div class="cout" id="decOut">—</div>
+          <div class="alert" id="decAlert" style="margin-top:8px"></div>
+        </div>
+      </div>
+      <div class="card mt">
+        <div class="clabel">How it works</div>
+        <div class="stitle">AES-256-GCM Properties</div>
+        <div class="psteps">
+          <div class="pstep done"><span class="picon">*</span><div class="pbody"><div class="pname">256-bit Key</div><div class="pdet">crypto.getRandomValues() — cryptographically secure</div></div><span class="sbadge sok">SECURE</span></div>
+          <div class="pstep done"><span class="picon">*</span><div class="pbody"><div class="pname">Unique IV per message</div><div class="pdet">96-bit random nonce — never reused</div></div><span class="sbadge sok">UNIQUE</span></div>
+          <div class="pstep done"><span class="picon">*</span><div class="pbody"><div class="pname">Authenticated Encryption</div><div class="pdet">GCM: confidentiality + integrity — tamper always detected</div></div><span class="sbadge sok">AUTHENTICATED</span></div>
+          <div class="pstep done"><span class="picon">*</span><div class="pbody"><div class="pname">128-bit Auth Tag</div><div class="pdet">Decryption fails if any bit modified</div></div><span class="sbadge sok">INTEGRITY</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- key exchange -->
+    <div class="dpanel" id="dp-keyex">
+      <div class="card" style="margin-bottom:14px">
+        <div class="clabel">ECDH P-256</div>
+        <div class="stitle">Diffie-Hellman Key Exchange</div>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.6;font-family:monospace;">Alice and Bob generate key pairs, exchange only public keys, and independently compute the same shared secret — private key never transmitted.</p>
+        <button class="btn bp" id="dhBtn" onclick="doDH()"><span class="bt">Run Key Exchange</span><div class="sp"></div></button>
+        <div id="dhProc" style="display:none;margin-top:14px">
+          <div class="psteps" id="dhSteps"></div>
+          <div class="kvis" id="kvis" style="display:none">
+            <div class="kparty"><div class="kpname">Alice (Client)</div><div class="clb">Public Key</div><div class="kpval" id="aPub">—</div></div>
+            <div style="text-align:center;color:var(--faint);font-size:16px;flex-shrink:0">—</div>
+            <div class="kparty"><div class="kpname">Bob (Server)</div><div class="clb">Public Key</div><div class="kpval" id="bPub">—</div></div>
+          </div>
+          <div class="shbox" id="shbox" style="display:none">
+            <div class="shlbl">Shared Secret — Both Sides Match</div>
+            <div class="shval" id="shval">—</div>
+            <div style="font-family:monospace;font-size:9px;color:var(--muted);margin-top:5px">Attacker with only public keys cannot compute this</div>
           </div>
         </div>
       </div>
-
-      <!-- MESSAGING -->
-      <div class="dpanel" id="dp-msg">
-        <div class="g2">
-          <div class="card">
-            <div class="clabel">E2E Encrypted</div><div class="stitle">Send Secure Message</div>
-            <div class="fg"><label class="fl">Message</label><textarea class="fi" id="msgIn" placeholder="Type your message..." style="min-height:90px"></textarea></div>
-            <div class="brow">
-              <button class="btn bp" onclick="sendMsg()">Encrypt &amp; Send</button>
-              <button class="btn bg" onclick="clearMsgs()">Clear</button>
-            </div>
-            <div class="alert" id="msgAlert" style="margin-top:9px"></div>
+      <div class="card">
+        <div class="clabel">Key Generation</div>
+        <div class="stitle">Generate Asymmetric Key Pair</div>
+        <div class="fg">
+          <label class="fl">Algorithm</label>
+          <select class="fi" id="kAlgo">
+            <option value="EC256">ECDSA P-256 — Digital Signatures</option>
+            <option value="EC384">ECDSA P-384 — Higher Security</option>
+            <option value="RSA">RSA-2048 — Traditional</option>
+          </select>
+        </div>
+        <button class="btn bgr" id="kpBtn" onclick="genKP()"><span class="bt">Generate Key Pair</span><div class="sp"></div></button>
+        <div id="kpOut" style="display:none;margin-top:12px">
+          <div class="g2">
+            <div><div class="clb">Public Key (PEM)</div><div class="cout" id="pubOut" style="font-size:9px;max-height:100px;overflow-y:auto"></div></div>
+            <div><div class="clb">Private Key (PEM)</div><div class="cout red" id="privOut" style="font-size:9px;max-height:100px;overflow-y:auto"></div></div>
           </div>
-          <div class="card">
-            <div class="clabel">Message Channel</div><div class="stitle">Secure Channel</div>
-            <div id="msgCh" style="max-height:320px;overflow-y:auto">
-              <div style="text-align:center;color:var(--text3);font-family:var(--mono);font-size:0.68rem;padding:18px">Channel empty.</div>
-            </div>
+          <div class="alert ai show mt">Private key shown for demo only — never expose in production.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- messaging -->
+    <div class="dpanel" id="dp-msg">
+      <div class="g2">
+        <div class="card">
+          <div class="clabel">E2E Encrypted</div>
+          <div class="stitle">Send Secure Message</div>
+          <div class="fg"><label class="fl">Message</label><textarea class="fi" id="msgIn" placeholder="Type your message..." style="min-height:80px"></textarea></div>
+          <div class="brow">
+            <button class="btn bp" onclick="sendMsg()">Encrypt &amp; Send</button>
+            <button class="btn bg" onclick="clearMsgs()">Clear</button>
+          </div>
+          <div class="alert" id="msgAlert" style="margin-top:8px"></div>
+        </div>
+        <div class="card">
+          <div class="clabel">Message Channel</div>
+          <div class="stitle">Secure Channel</div>
+          <div id="msgCh" style="max-height:300px;overflow-y:auto">
+            <div style="text-align:center;color:var(--faint);font-family:monospace;font-size:11px;padding:16px">Channel empty.</div>
           </div>
         </div>
-        <div class="card mt">
-          <div class="clabel">Encryption Pipeline</div><div class="stitle">How Secure Messaging Works</div>
+      </div>
+      <div class="card mt">
+        <div class="clabel">Encryption Pipeline</div>
+        <div class="stitle">How Secure Messaging Works</div>
+        <div class="psteps">
+          <div class="pstep done"><span class="picon">*</span><div class="pbody"><div class="pname">Plaintext Input</div><div class="pdet">Never stored or sent as-is</div></div><span class="sbadge sok">INPUT</span></div>
+          <div class="pstep done"><span class="picon">*</span><div class="pbody"><div class="pname">Session Key</div><div class="pdet">AES-256 from crypto.getRandomValues()</div></div><span class="sbadge sok">DERIVED</span></div>
+          <div class="pstep done"><span class="picon">*</span><div class="pbody"><div class="pname">Unique Nonce</div><div class="pdet">96-bit random IV per message</div></div><span class="sbadge sok">UNIQUE</span></div>
+          <div class="pstep done"><span class="picon">*</span><div class="pbody"><div class="pname">AES-256-GCM</div><div class="pdet">Authenticated encryption</div></div><span class="sbadge sok">ENCRYPTED</span></div>
+          <div class="pstep done"><span class="picon">*</span><div class="pbody"><div class="pname">Verify &amp; Decrypt</div><div class="pdet">Auth tag checked before decryption</div></div><span class="sbadge sok">VERIFIED</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- auth flow -->
+    <div class="dpanel" id="dp-flow">
+      <div class="card" style="margin-bottom:14px">
+        <div class="clabel">Auth Flow</div>
+        <div class="stitle">How Your Login Was Secured</div>
+        <div class="psteps">
+          <div class="pstep done"><span class="picon">1</span><div class="pbody"><div class="pname">Challenge Requested</div><div class="pdet">Username — server returns challenge_id + nonce + salt</div><div class="pval">expires_at = NOW + 5min, stored in auth_challenges</div></div><span class="sbadge sok">DONE</span></div>
+          <div class="pstep done"><span class="picon">2</span><div class="pbody"><div class="pname">Password Hashed Client-Side</div><div class="pdet">PBKDF2-SHA256, 310,000 iterations, server salt</div><div class="pval">pw_hash = PBKDF2(pw, salt, 310000) to base64</div></div><span class="sbadge sok">DONE</span></div>
+          <div class="pstep done"><span class="picon">3</span><div class="pbody"><div class="pname">Challenge Response</div><div class="pdet">HMAC-SHA256(pw_hash, nonce) — password never transmitted</div><div class="pval">response = HMAC_SHA256(pw_hash, nonce) to hex</div></div><span class="sbadge sok">DONE</span></div>
+          <div class="pstep done"><span class="picon">4</span><div class="pbody"><div class="pname">Replay Protection</div><div class="pdet">Unique nonce + timestamp +/-5 min window per request</div><div class="pval">hash(user+ep+ts+nonce) to replay_log, duplicate = rejected</div></div><span class="sbadge sok">DONE</span></div>
+          <div class="pstep done"><span class="picon">5</span><div class="pbody"><div class="pname">TOTP Verified</div><div class="pdet">RFC 6238, 30s, +/-1 drift — single-use enforced</div><div class="pval">hash(user+code+window) stored — reuse blocked</div></div><span class="sbadge sok">DONE</span></div>
+          <div class="pstep done"><span class="picon">6</span><div class="pbody"><div class="pname">Session Token</div><div class="pdet">64-byte CSPRNG, stored as SHA-256 hash, 8h validity</div><div class="pval">Token invalidated on logout or expiry</div></div><span class="sbadge sok">DONE</span></div>
+        </div>
+      </div>
+      <div class="g2">
+        <div class="card">
+          <div class="clabel">Attack Surface</div>
+          <div class="stitle">Mitigations</div>
           <div class="psteps">
-            <div class="pstep done"><span class="picon">📝</span><div class="pbody"><div class="pname">Plaintext Input</div><div class="pdet">Never stored or sent as-is</div></div><span class="sbadge sok">INPUT</span></div>
-            <div class="pstep done"><span class="picon">🔑</span><div class="pbody"><div class="pname">Session Key</div><div class="pdet">AES-256 from crypto.getRandomValues()</div></div><span class="sbadge sok">DERIVED</span></div>
-            <div class="pstep done"><span class="picon">🎲</span><div class="pbody"><div class="pname">Unique Nonce</div><div class="pdet">96-bit random IV per message</div></div><span class="sbadge sok">UNIQUE</span></div>
-            <div class="pstep done"><span class="picon">🔒</span><div class="pbody"><div class="pname">AES-256-GCM</div><div class="pdet">Authenticated encryption</div></div><span class="sbadge sok">ENCRYPTED</span></div>
-            <div class="pstep done"><span class="picon">✅</span><div class="pbody"><div class="pname">Verify &amp; Decrypt</div><div class="pdet">Auth tag checked before decryption</div></div><span class="sbadge sok">VERIFIED</span></div>
+            <div class="pstep done"><span class="picon">*</span><div class="pbody"><div class="pname">Password Interception</div><div class="pdet">Only HMAC response sent — password stays client-side</div></div><span class="sbadge sok">MITIGATED</span></div>
+            <div class="pstep done"><span class="picon">*</span><div class="pbody"><div class="pname">Replay Attacks</div><div class="pdet">Nonce + one-time challenge + timestamp window</div></div><span class="sbadge sok">BLOCKED</span></div>
+            <div class="pstep done"><span class="picon">*</span><div class="pbody"><div class="pname">OTP Reuse</div><div class="pdet">TOTP hash recorded — replay blocked</div></div><span class="sbadge sok">BLOCKED</span></div>
+            <div class="pstep done"><span class="picon">*</span><div class="pbody"><div class="pname">Stale Requests</div><div class="pdet">Requests older than 5 min rejected</div></div><span class="sbadge sok">ENFORCED</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="clabel">Crypto Stack</div>
+          <div class="stitle">Algorithms</div>
+          <div class="itable">
+            <div class="irow"><span class="ik">Password Hash</span><span class="iv">PBKDF2-HMAC-SHA256</span></div>
+            <div class="irow"><span class="ik">Iterations</span><span class="iv">310,000</span></div>
+            <div class="irow"><span class="ik">Salt</span><span class="iv">32 bytes random</span></div>
+            <div class="irow"><span class="ik">Challenge</span><span class="iv">HMAC-SHA256</span></div>
+            <div class="irow"><span class="ik">OTP</span><span class="iv">RFC 6238 TOTP</span></div>
+            <div class="irow"><span class="ik">Session Token</span><span class="iv">64B CSPRNG + SHA-256</span></div>
+            <div class="irow"><span class="ik">Symmetric</span><span class="iv">AES-256-GCM</span></div>
+            <div class="irow"><span class="ik">Key Exchange</span><span class="iv">ECDH P-256</span></div>
           </div>
         </div>
       </div>
-
-      <!-- AUTH FLOW -->
-      <div class="dpanel" id="dp-flow">
-        <div class="card" style="margin-bottom:14px">
-          <div class="clabel">Live Auth Flow</div><div class="stitle">How Your Login Was Secured</div>
-          <div class="psteps">
-            <div class="pstep done"><span class="picon">1</span><div class="pbody"><div class="pname">Challenge Requested</div><div class="pdet">Username → server returns challenge_id + nonce + salt</div><div class="pval">expires_at = NOW + 5min, stored in auth_challenges</div></div><span class="sbadge sok">DONE</span></div>
-            <div class="pstep done"><span class="picon">2</span><div class="pbody"><div class="pname">Password Hashed Client-Side</div><div class="pdet">PBKDF2-SHA256, 310,000 iterations, server salt</div><div class="pval">pw_hash = PBKDF2(pw, salt, 310000) → base64</div></div><span class="sbadge sok">DONE</span></div>
-            <div class="pstep done"><span class="picon">3</span><div class="pbody"><div class="pname">Challenge Response</div><div class="pdet">HMAC-SHA256(pw_hash, nonce) — password never transmitted</div><div class="pval">response = HMAC_SHA256(pw_hash, nonce) → hex</div></div><span class="sbadge sok">DONE</span></div>
-            <div class="pstep done"><span class="picon">4</span><div class="pbody"><div class="pname">Replay Protection</div><div class="pdet">Unique nonce + timestamp ±5 min window per request</div><div class="pval">hash(user+ep+ts+nonce) → replay_log, duplicate = rejected</div></div><span class="sbadge sok">DONE</span></div>
-            <div class="pstep done"><span class="picon">5</span><div class="pbody"><div class="pname">TOTP Verified</div><div class="pdet">RFC 6238, 30s, ±1 drift — single-use enforced</div><div class="pval">hash(user+code+window) stored — reuse blocked</div></div><span class="sbadge sok">DONE</span></div>
-            <div class="pstep done"><span class="picon">6</span><div class="pbody"><div class="pname">Session Token</div><div class="pdet">64-byte CSPRNG, stored as SHA-256 hash, 8h validity</div><div class="pval">Token invalidated on logout or expiry</div></div><span class="sbadge sok">DONE</span></div>
-          </div>
-        </div>
-        <div class="g2">
-          <div class="card">
-            <div class="clabel">Attack Surface</div><div class="stitle">Mitigations</div>
-            <div class="psteps">
-              <div class="pstep done"><span class="picon">🛡</span><div class="pbody"><div class="pname">Password Interception</div><div class="pdet">Only HMAC response sent — password stays client-side</div></div><span class="sbadge sok">MITIGATED</span></div>
-              <div class="pstep done"><span class="picon">🔄</span><div class="pbody"><div class="pname">Replay Attacks</div><div class="pdet">Nonce + one-time challenge + timestamp window</div></div><span class="sbadge sok">BLOCKED</span></div>
-              <div class="pstep done"><span class="picon">🧩</span><div class="pbody"><div class="pname">OTP Reuse</div><div class="pdet">TOTP hash recorded — replay blocked</div></div><span class="sbadge sok">BLOCKED</span></div>
-              <div class="pstep done"><span class="picon">⏰</span><div class="pbody"><div class="pname">Stale Requests</div><div class="pdet">Requests > 5 min old rejected</div></div><span class="sbadge sok">ENFORCED</span></div>
-            </div>
-          </div>
-          <div class="card">
-            <div class="clabel">Crypto Stack</div><div class="stitle">Algorithms</div>
-            <div class="itable">
-              <div class="irow"><span class="ik">Password Hash</span><span class="iv">PBKDF2-HMAC-SHA256</span></div>
-              <div class="irow"><span class="ik">Iterations</span><span class="iv">310,000</span></div>
-              <div class="irow"><span class="ik">Salt</span><span class="iv">32 bytes random</span></div>
-              <div class="irow"><span class="ik">Challenge</span><span class="iv">HMAC-SHA256</span></div>
-              <div class="irow"><span class="ik">OTP</span><span class="iv">RFC 6238 TOTP</span></div>
-              <div class="irow"><span class="ik">Session Token</span><span class="iv">64B CSPRNG + SHA-256</span></div>
-              <div class="irow"><span class="ik">Symmetric</span><span class="iv">AES-256-GCM</span></div>
-              <div class="irow"><span class="ik">Key Exchange</span><span class="iv">ECDH P-256</span></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div><!-- /dashWrap -->
-  </div><!-- /content -->
-
-  <!-- SIDE PANEL -->
-  <div class="side" id="sidePanel">
-    <div class="side-hdr">
-      <div class="side-title">
-        <div class="side-live"></div>
-        Security Observer
-      </div>
-      <div class="side-actions">
-        <button class="side-btn" onclick="pauseFeed()" id="pauseBtn">Pause</button>
-        <button class="side-btn" onclick="clearFeed()">Clear</button>
-      </div>
-    </div>
-    <div class="side-filters">
-      <div class="sf active" onclick="setFilter('all')" id="sf-all">All</div>
-      <div class="sf" onclick="setFilter('request')" id="sf-request">HTTP</div>
-      <div class="sf" onclick="setFilter('crypto')" id="sf-crypto">Crypto</div>
-      <div class="sf" onclick="setFilter('auth')" id="sf-auth">Auth</div>
-      <div class="sf" onclick="setFilter('error')" id="sf-error">Errors</div>
-    </div>
-    <div class="side-feed" id="sideFeed">
-      <div style="text-align:center;color:var(--text3);font-family:var(--mono);font-size:0.62rem;padding:20px;line-height:1.8;">
-        Observer ready.<br>Interact with the app<br>to see events here.
-      </div>
-    </div>
-    <div class="side-summary">
-      <div class="ss-item c"><div class="ss-num" id="ss-req">0</div><div class="ss-lbl">HTTP</div></div>
-      <div class="ss-item g"><div class="ss-num" id="ss-ok">0</div><div class="ss-lbl">Success</div></div>
-      <div class="ss-item r"><div class="ss-num" id="ss-err">0</div><div class="ss-lbl">Errors</div></div>
-      <div class="ss-item p"><div class="ss-num" id="ss-crypto">0</div><div class="ss-lbl">Crypto</div></div>
     </div>
   </div>
+
+</div><!-- /content -->
+
+<!-- SIDE PANEL -->
+<div class="side" id="sidePanel">
+  <div class="side-hdr">
+    <div class="side-title">Security Observer</div>
+    <div class="side-actions">
+      <button class="side-btn" onclick="pauseFeed()" id="pauseBtn">Pause</button>
+      <button class="side-btn" onclick="clearFeed()">Clear</button>
+    </div>
+  </div>
+  <div class="side-filters">
+    <div class="sf active" onclick="setFilter('all')"     id="sf-all">All</div>
+    <div class="sf"        onclick="setFilter('request')" id="sf-request">HTTP</div>
+    <div class="sf"        onclick="setFilter('crypto')"  id="sf-crypto">Crypto</div>
+    <div class="sf"        onclick="setFilter('auth')"    id="sf-auth">Auth</div>
+    <div class="sf"        onclick="setFilter('error')"   id="sf-error">Errors</div>
+  </div>
+  <div class="side-feed" id="sideFeed">
+    <div style="text-align:center;color:var(--faint);font-family:monospace;font-size:11px;padding:20px;line-height:1.8;">
+      Observer ready.<br>Interact with the app<br>to see events here.
+    </div>
+  </div>
+  <div class="side-summary">
+    <div class="ss-item"><div class="ss-num" id="ss-req">0</div><div class="ss-lbl">HTTP</div></div>
+    <div class="ss-item"><div class="ss-num" id="ss-ok">0</div><div class="ss-lbl">OK</div></div>
+    <div class="ss-item"><div class="ss-num" id="ss-err">0</div><div class="ss-lbl">Errors</div></div>
+    <div class="ss-item"><div class="ss-num" id="ss-crypto">0</div><div class="ss-lbl">Crypto</div></div>
+  </div>
+</div>
 
 </div><!-- /body-row -->
 </div><!-- /shell -->
@@ -643,68 +672,49 @@ const h2b=h=>new Uint8Array(h.match(/.{2}/g).map(x=>parseInt(x,16))).buffer;
 const b2b=b=>btoa(String.fromCharCode(...new Uint8Array(b)));
 const b64b=s=>{const b=atob(s);return new Uint8Array(b.split('').map(c=>c.charCodeAt(0))).buffer;};
 
-// ─── Observer / Side Panel ────────────────────────────────────────────────────
 let events=[],paused=false,filter='all';
 let counts={req:0,ok:0,err:0,crypto:0};
-
 function ts(){return new Date().toLocaleTimeString('en',{hour12:false,hour:'2-digit',minute:'2-digit',second:'2-digit'});}
 
-function observe(cat, type, fields){
-  // cat: 'request' | 'response' | 'crypto' | 'auth' | 'error' | 'key'
+function observe(cat,type,fields){
   const ev={cat,type,fields,time:ts(),id:Date.now()+Math.random(),open:false};
   events.unshift(ev);
-  if(events.length>200) events=events.slice(0,200);
-
-  // Update counters
-  if(cat==='request') counts.req++;
-  if(cat==='response'&&fields.status&&fields.status<400) counts.ok++;
-  if(cat==='error'||(cat==='response'&&fields.status&&fields.status>=400)) counts.err++;
-  if(cat==='crypto'||cat==='key') counts.crypto++;
-  $('ss-req').textContent=counts.req;
-  $('ss-ok').textContent=counts.ok;
-  $('ss-err').textContent=counts.err;
-  $('ss-crypto').textContent=counts.crypto;
-
-  if(!paused) renderFeed();
+  if(events.length>200)events=events.slice(0,200);
+  if(cat==='request')counts.req++;
+  if(cat==='response'&&fields.status&&fields.status<400)counts.ok++;
+  if(cat==='error'||(cat==='response'&&fields.status&&fields.status>=400))counts.err++;
+  if(cat==='crypto'||cat==='key')counts.crypto++;
+  $('ss-req').textContent=counts.req;$('ss-ok').textContent=counts.ok;
+  $('ss-err').textContent=counts.err;$('ss-crypto').textContent=counts.crypto;
+  if(!paused)renderFeed();
 }
 
 function renderFeed(){
   const feed=$('sideFeed');
   const filtered=filter==='all'?events:events.filter(e=>{
-    if(filter==='request') return e.cat==='request'||e.cat==='response';
-    if(filter==='crypto') return e.cat==='crypto'||e.cat==='key';
-    if(filter==='auth') return e.cat==='auth';
-    if(filter==='error') return e.cat==='error'||(e.cat==='response'&&e.fields.status>=400);
+    if(filter==='request')return e.cat==='request'||e.cat==='response';
+    if(filter==='crypto')return e.cat==='crypto'||e.cat==='key';
+    if(filter==='auth')return e.cat==='auth';
+    if(filter==='error')return e.cat==='error'||(e.cat==='response'&&e.fields.status>=400);
     return true;
   });
-
-  if(!filtered.length){
-    feed.innerHTML='<div style="text-align:center;color:var(--text3);font-family:var(--mono);font-size:0.62rem;padding:20px">No events matching filter.</div>';
-    return;
-  }
-
+  if(!filtered.length){feed.innerHTML='<div style="text-align:center;color:var(--faint);font-family:monospace;font-size:11px;padding:20px">No events matching filter.</div>';return;}
   feed.innerHTML=filtered.slice(0,60).map(ev=>{
     const fieldsHtml=Object.entries(ev.fields).map(([k,v])=>{
-      const colorClass=
-        k==='status'&&v<400?'green':
-        k==='status'&&v>=400?'red':
+      const cc=k==='status'&&v<400?'green':k==='status'&&v>=400?'red':
         k==='result'&&(v+'').toLowerCase().includes('success')?'green':
         k==='result'&&(v+'').toLowerCase().includes('fail')?'red':
         k==='algorithm'||k==='key'||k==='iv'||k==='nonce'?'purple':
-        k==='hash'||k==='hmac'||k==='token'?'cyan':
-        k==='error'?'red':
-        k==='warn'?'warn':'';
-      const display=v===undefined||v===null?'—':
-        typeof v==='string'&&v.length>80?v.substring(0,80)+'...':v;
-      return `<div class="ev-field"><div class="ev-key">${k}</div><div class="ev-val ${colorClass}">${display}</div></div>`;
+        k==='hash'||k==='hmac'||k==='token'?'cyan':k==='error'?'red':k==='warn'?'warn':'';
+      const display=v===undefined||v===null?'—':typeof v==='string'&&v.length>80?v.substring(0,80)+'...':v;
+      return `<div class="ev-field"><div class="ev-key">${k}</div><div class="ev-val ${cc}">${display}</div></div>`;
     }).join('');
-
     return `<div class="ev cat-${ev.cat}" id="ev-${ev.id}">
       <div class="ev-head" onclick="toggleEv('${ev.id}')">
         <div class="ev-dot"></div>
         <div class="ev-type">${ev.type}</div>
         <div class="ev-time">${ev.time}</div>
-        <div class="ev-chevron">▶</div>
+        <div class="ev-chevron">+</div>
       </div>
       <div class="ev-body">${fieldsHtml}</div>
     </div>`;
@@ -715,62 +725,27 @@ function toggleEv(id){
   const ev=events.find(e=>String(e.id)===String(id));
   if(ev){ev.open=!ev.open;const el=document.getElementById('ev-'+id);if(el)el.classList.toggle('open',ev.open);}
 }
-
 function setFilter(f){
-  filter=f;
-  document.querySelectorAll('.sf').forEach(el=>el.classList.remove('active'));
-  $('sf-'+f).classList.add('active');
-  renderFeed();
+  filter=f;document.querySelectorAll('.sf').forEach(el=>el.classList.remove('active'));$('sf-'+f).classList.add('active');renderFeed();
 }
-
 function pauseFeed(){
-  paused=!paused;
-  $('pauseBtn').textContent=paused?'Resume':'Pause';
-  $('pauseBtn').style.color=paused?'var(--warn)':'';
+  paused=!paused;$('pauseBtn').textContent=paused?'Resume':'Pause';
   if(!paused)renderFeed();
 }
+function clearFeed(){events=[];counts={req:0,ok:0,err:0,crypto:0};renderFeed();['ss-req','ss-ok','ss-err','ss-crypto'].forEach(id=>{$(id).textContent='0';});}
 
-function clearFeed(){events=[];counts={req:0,ok:0,err:0,crypto:0};renderFeed();
-  ['ss-req','ss-ok','ss-err','ss-crypto'].forEach(id=>{$(id).textContent='0';});}
-
-// ─── Observed fetch ────────────────────────────────────────────────────────────
-async function oFetch(url, opts={}, label=''){
-  const method=(opts.method||'GET').toUpperCase();
-  const short=url.replace(API,'');
-  let body=null;
-  try{body=opts.body?JSON.parse(opts.body):null;}catch(e){}
-
-  // Sanitize — never log passwords
-  const safeBody=body?Object.fromEntries(Object.entries(body).map(([k,v])=>[k,
-    ['password','response','otp_code'].includes(k)?'[REDACTED]':
-    typeof v==='string'&&v.length>60?v.substring(0,60)+'...':v
-  ])):null;
-
-  observe('request',`${method} ${short}`,{
-    endpoint: short,
-    method,
-    ...(safeBody?{payload:JSON.stringify(safeBody)}:{})
-  });
-
+async function oFetch(url,opts={},label=''){
+  const method=(opts.method||'GET').toUpperCase();const short=url.replace(API,'');
+  let body=null;try{body=opts.body?JSON.parse(opts.body):null;}catch(e){}
+  const safeBody=body?Object.fromEntries(Object.entries(body).map(([k,v])=>[k,['password','response','otp_code'].includes(k)?'[REDACTED]':typeof v==='string'&&v.length>60?v.substring(0,60)+'...':v])):null;
+  observe('request',`${method} ${short}`,{endpoint:short,method,...(safeBody?{payload:JSON.stringify(safeBody)}:{})});
   const r=await fetch(url,{headers:{'Content-Type':'application/json'},...opts});
-  let data;
-  try{data=await r.clone().json();}catch(e){data={};}
-
+  let data;try{data=await r.clone().json();}catch(e){data={};}
   const isOk=r.status<400;
-  observe(isOk?'response':'error',`${r.status} ${short}`,{
-    status: r.status,
-    endpoint: short,
-    ...(data.message?{message:data.message}:{}),
-    ...(data.detail?{detail:data.detail}:{}),
-    ...(data.username?{user:data.username}:{}),
-    ...(data.session_token?{token:'[ISSUED — '+data.session_token.substring(0,12)+'...]'}:{}),
-    result: isOk?'Success':'Failed'
-  });
-
+  observe(isOk?'response':'error',`${r.status} ${short}`,{status:r.status,endpoint:short,...(data.message?{message:data.message}:{}),...(data.detail?{detail:data.detail}:{}),...(data.username?{user:data.username}:{}),...(data.session_token?{token:'[ISSUED — '+data.session_token.substring(0,12)+'...]'}:{}),result:isOk?'Success':'Failed'});
   return r;
 }
 
-// ─── Tab / panel switching ─────────────────────────────────────────────────────
 function switchTab(t){
   document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',(i===0&&t==='login')||(i===1&&t==='register')));
   $('loginPanel').style.display=t==='login'?'':'none';
@@ -786,20 +761,18 @@ function showA(msg,type='ae'){const el=$('authAlert');el.textContent=msg;el.clas
 function hideA(){$('authAlert').className='alert';}
 function setL(id,v){const b=$(id);b.classList.toggle('loading',v);b.disabled=v;}
 
-// ─── Password strength ─────────────────────────────────────────────────────────
 async function checkPw(pw){
   const el=$('pws');if(!pw){el.classList.remove('show');return;}el.classList.add('show');
   try{
     observe('crypto','Password Strength Check',{input:'[REDACTED]',algorithm:'Scoring heuristic'});
     const d=await(await oFetch(`${API}/api/auth/password-strength`,{method:'POST',body:JSON.stringify({password:pw})})).json();
-    const colors={Weak:'#ff4455',Moderate:'#ffbb00',Strong:'#00ff88'};
+    const colors={Weak:'#8a0018',Moderate:'#6a4800',Strong:'#2a5c38'};
     $('pwb').style.cssText=`width:${d.score}%;background:${colors[d.strength]}`;
     const h=$('pwh');h.textContent=`${d.strength} (${d.score}/100)${d.issues.length?' — '+d.issues[0]:''}`;h.style.color=colors[d.strength];
     observe('auth','Password Strength Result',{strength:d.strength,score:d.score+'/100',issues:d.issues.length?d.issues.join(', '):'None'});
   }catch(e){}
 }
 
-// ─── Register ─────────────────────────────────────────────────────────────────
 async function doRegister(){
   const u=$('rUser').value.trim(),e=$('rEmail').value.trim(),p=$('rPass').value;
   if(!u||!e||!p){showA('All fields required');return;}
@@ -817,7 +790,6 @@ async function doRegister(){
   finally{setL('regBtn',false);}
 }
 
-// ─── Login step 1 ─────────────────────────────────────────────────────────────
 async function startLogin(){
   const u=$('lUser').value.trim(),p=$('lPass').value;
   if(!u||!p){showA('Enter credentials');return;}
@@ -829,14 +801,11 @@ async function startLogin(){
     const c=await cr.json();
     if(!cr.ok){showA(c.detail||'Failed');return;}
     observe('response','Challenge Received',{challenge_id:c.challenge_id?.substring(0,20)+'...',nonce:c.nonce?.substring(0,24)+'...',salt:c.salt?.substring(0,16)+'...',expires:'5 minutes'});
-
-    observe('crypto','PBKDF2 Derivation',{algorithm:'PBKDF2-HMAC-SHA256',password:'[REDACTED]',salt:c.salt?.substring(0,16)+'...',iterations:'310,000',output:'256-bit → base64'});
+    observe('crypto','PBKDF2 Derivation',{algorithm:'PBKDF2-HMAC-SHA256',password:'[REDACTED]',salt:c.salt?.substring(0,16)+'...',iterations:'310,000',output:'256-bit to base64'});
     const resp=await calcResp(p,c.salt,c.nonce);
     observe('crypto','HMAC Computed',{algorithm:'HMAC-SHA256',input:'PBKDF2(password, salt)',nonce:c.nonce?.substring(0,16)+'...',response:resp.substring(0,24)+'...',note:'Password never transmitted'});
-
     const ts2=String(Date.now()/1000),rn=rnonce();
     observe('crypto','Replay Token Generated',{timestamp:ts2,request_nonce:rn.substring(0,16)+'...',purpose:'Anti-replay binding'});
-
     const lr=await oFetch(`${API}/api/auth/login/step1`,{method:'POST',body:JSON.stringify({challenge_id:c.challenge_id,username:u,response:resp,timestamp:ts2,request_nonce:rn})});
     const ld=await lr.json();
     if(!lr.ok){showA(ld.detail||'Invalid credentials');observe('error','Challenge-Response Failed',{reason:ld.detail,username:u});return;}
@@ -859,16 +828,14 @@ async function calcResp(pw,salt,n){
 }
 function rnonce(){return Array.from(crypto.getRandomValues(new Uint8Array(16))).map(b=>b.toString(16).padStart(2,'0')).join('');}
 
-// ─── OTP input ─────────────────────────────────────────────────────────────────
 function oi(el,i){el.value=el.value.replace(/\D/g,'');if(el.value&&i<5)$('o'+(i+1)).focus();if(i===5&&el.value)verifyOTP();}
 function ok(e,i){if(e.key==='Backspace'&&!e.target.value&&i>0)$('o'+(i-1)).focus();}
 function getOTP(){return[0,1,2,3,4,5].map(i=>$('o'+i).value).join('');}
 
-// ─── Login step 2 ─────────────────────────────────────────────────────────────
 async function verifyOTP(){
   const code=getOTP();if(code.length!==6){showA('Enter 6-digit OTP');return;}
   setL('otpBtn',true);hideA();
-  observe('auth','OTP Verification',{code:'[REDACTED]',algorithm:'RFC 6238 TOTP',window:'±1 time step (±30s)',purpose:'Second factor authentication'});
+  observe('auth','OTP Verification',{code:'[REDACTED]',algorithm:'RFC 6238 TOTP',window:'+/-1 time step (+/-30s)',purpose:'Second factor authentication'});
   try{
     const ts2=String(Date.now()/1000),rn=rnonce();
     observe('crypto','Anti-Replay Token',{timestamp:ts2,request_nonce:rn.substring(0,16)+'...',purpose:'Prevent OTP replay'});
@@ -891,14 +858,12 @@ async function verifyOTP(){
 function usteps(a){for(let i=1;i<=3;i++){const el=$('st'+i);el.className='step'+(i<a?' done':i===a?' active':'');}}
 function resetLogin(){$('ls1').style.display='';$('ls2').style.display='none';usteps(1);tempToken=null;[0,1,2,3,4,5].forEach(i=>{$('o'+i).value='';});hideA();}
 
-// ─── Dashboard ─────────────────────────────────────────────────────────────────
 async function showDash(){
   $('authWrap').style.display='none';$('dashWrap').style.display='';
   $('dashUser').textContent=currentUser;$('logoutBtn').style.display='';
   observe('auth','Dashboard Loaded',{username:currentUser,status:'Fully authenticated',factors:'Password + TOTP'});
   await loadSess();await loadStats();await initMsgKey();
 }
-
 async function loadSess(){
   try{
     observe('request','GET /api/session/me',{token:'Bearer [...]',purpose:'Load session details'});
@@ -909,7 +874,6 @@ async function loadSess(){
     observe('response','Session Info',{user:d.username,ip:d.ip_address||'unknown',expires:d.session_expires?new Date(d.session_expires).toLocaleTimeString():'—'});
   }catch(e){}
 }
-
 async function loadStats(){
   try{
     const d=await(await oFetch(`${API}/api/session/stats`,{headers:{Authorization:`Bearer ${sessionToken}`}})).json();
@@ -920,23 +884,20 @@ async function loadStats(){
       <li class="evi"><div class="evd ${e.success?'ok':'fail'}"></div>
       <span class="evt">${e.event_type.replace(/_/g,' ')}</span>
       <span class="evt2">${new Date(e.created_at).toLocaleTimeString()}</span></li>`).join('')
-      :'<li class="evi" style="color:var(--text3);font-family:var(--mono);font-size:0.68rem">No events yet</li>';
+      :'<li class="evi" style="color:var(--faint);font-family:monospace">No events yet</li>';
     observe('response','Security Stats',{total_logins:d.total_logins,failed_24h:d.failed_attempts_24h,replays_blocked:d.replay_attempts_blocked});
   }catch(e){}
 }
-
 async function doLogout(){
   observe('auth','Logout Initiated',{username:currentUser,action:'Session token invalidation'});
   try{await oFetch(`${API}/api/session/logout`,{method:'POST',body:JSON.stringify({session_token:sessionToken})});}catch(e){}
   observe('auth','Session Terminated',{token:'Invalidated in DB',status:'Logged out'});
   sessionToken=null;currentUser=null;tempToken=null;
   localStorage.removeItem('st');localStorage.removeItem('cu');
-  $('dashWrap').style.display='none';$('authWrap').style.display='';
-  $('logoutBtn').style.display='none';
+  $('dashWrap').style.display='none';$('authWrap').style.display='';$('logoutBtn').style.display='none';
   $('ls1').style.display='';$('ls2').style.display='none';
   $('lUser').value='';$('lPass').value='';usteps(1);switchTab('login');
 }
-
 async function tryRestore(){
   const t=localStorage.getItem('st'),u=localStorage.getItem('cu');if(!t||!u)return;
   observe('auth','Session Restore Attempt',{username:u,token:'[Checking validity...]'});
@@ -947,7 +908,6 @@ async function tryRestore(){
   }catch(e){}
 }
 
-// ─── Encryption ────────────────────────────────────────────────────────────────
 async function genKey(){
   observe('crypto','AES Key Generation',{algorithm:'AES-256-GCM',bits:'256',source:'crypto.getRandomValues()'});
   encKey=await crypto.subtle.generateKey({name:'AES-GCM',length:256},true,['encrypt','decrypt']);
@@ -955,18 +915,11 @@ async function genKey(){
   $('encK').value=b2h(raw);keysN++;$('stKeys').textContent=keysN;
   observe('key','AES-256 Key Ready',{key:b2h(raw).substring(0,24)+'...',length:'256 bits',exportable:'Yes (for display)'});
 }
-
 async function doEncrypt(){
   const pt=$('encPT').value;if(!pt){alert('Enter a message');return;}
   const proc=$('encProc');proc.style.display='block';$('encOut').style.display='none';
-  const defs=[
-    {i:'🔑',n:'Key Loaded',d:'AES-256 key ready'},
-    {i:'🎲',n:'IV Generated',d:'96-bit random nonce'},
-    {i:'🔒',n:'Encrypting',d:'AES-256-GCM running'},
-    {i:'🏷',n:'Auth Tag',d:'128-bit GCM tag produced'},
-    {i:'✅',n:'Done',d:'Ciphertext ready'},
-  ];
-  proc.innerHTML=defs.map((s,i)=>`<div class="pstep" id="es${i}"><span class="picon">${s.i}</span><div class="pbody"><div class="pname">${s.n}</div><div class="pdet">${s.d}</div></div><span class="sbadge swait">WAITING</span></div>`).join('');
+  const defs=[{n:'Key Loaded',d:'AES-256 key ready'},{n:'IV Generated',d:'96-bit random nonce'},{n:'Encrypting',d:'AES-256-GCM running'},{n:'Auth Tag',d:'128-bit GCM tag produced'},{n:'Done',d:'Ciphertext ready'}];
+  proc.innerHTML=defs.map((s,i)=>`<div class="pstep" id="es${i}"><span class="picon">*</span><div class="pbody"><div class="pname">${s.n}</div><div class="pdet">${s.d}</div></div><span class="sbadge swait">WAITING</span></div>`).join('');
   const act=async(i,v='')=>{
     const el=$(`es${i}`);el.classList.add('act');el.querySelector('.sbadge').className='sbadge spend';el.querySelector('.sbadge').textContent='RUNNING';
     await new Promise(r=>setTimeout(r,350));
@@ -980,27 +933,22 @@ async function doEncrypt(){
     else{encKey=await crypto.subtle.importKey('raw',h2b(kh),{name:'AES-GCM'},false,['encrypt','decrypt']);}
     await act(0,`Key: ${kh.substring(0,24)}...`);
     observe('key','Encryption Key',{key:kh.substring(0,24)+'...',length:'256 bits'});
-
     const iv=crypto.getRandomValues(new Uint8Array(12));
     await act(1,`IV: ${b2h(iv.buffer)}`);
     observe('crypto','IV Generated',{iv:b2h(iv.buffer),bits:'96',unique:'Per-message — never reused'});
-
     const enc=new TextEncoder();
     const cb=await crypto.subtle.encrypt({name:'AES-GCM',iv},encKey,enc.encode(pt));
     await act(2);
-
     const ca=new Uint8Array(cb);const tag=ca.slice(-16);const ci=ca.slice(0,-16);
     await act(3,`Tag: ${b2h(tag.buffer)}`);
     observe('crypto','Auth Tag',{tag:b2h(tag.buffer),bits:'128',purpose:'Tamper detection'});
     await act(4,`${ci.length} bytes`);
-
     $('encOut').style.display='block';$('encCT').textContent=b2b(ci.buffer);
     $('encIV').textContent=b2h(iv.buffer);$('encTag').textContent=b2h(tag.buffer);
     $('decCT').value=b2b(cb);$('decK').value=kh;$('decIV').value=b2h(iv.buffer);
     observe('crypto','Encryption Complete',{ciphertext_bytes:ci.length,iv:b2h(iv.buffer).substring(0,16)+'...',tag:b2h(tag.buffer).substring(0,16)+'...',result:'Success'});
   }catch(e){proc.innerHTML=`<div class="alert ae show">Error: ${e.message}</div>`;observe('error','Encryption Failed',{error:e.message});}
 }
-
 async function doDecrypt(){
   const ct=$('decCT').value.trim(),kh=$('decK').value.trim(),ivh=$('decIV').value.trim();
   const al=$('decAlert');al.className='alert';
@@ -1011,9 +959,8 @@ async function doDecrypt(){
     const iv=new Uint8Array(h2b(ivh));
     const plain=await crypto.subtle.decrypt({name:'AES-GCM',iv},k,b64b(ct));
     const txt=new TextDecoder().decode(plain);
-    $('decOut').textContent=txt;
-    al.textContent='Decryption successful — Auth tag verified';al.className='alert as show';
-    observe('crypto','Decryption Success',{plaintext_length:txt.length+' chars',auth_tag:'Verified ✓',tampered:'No'});
+    $('decOut').textContent=txt;al.textContent='Decryption successful — Auth tag verified';al.className='alert as show';
+    observe('crypto','Decryption Success',{plaintext_length:txt.length+' chars',auth_tag:'Verified',tampered:'No'});
   }catch(e){
     $('decOut').textContent='Decryption failed';
     al.textContent='Failed — wrong key/IV or message tampered';al.className='alert ae show';
@@ -1021,19 +968,11 @@ async function doDecrypt(){
   }
 }
 
-// ─── ECDH ──────────────────────────────────────────────────────────────────────
 async function doDH(){
   setL('dhBtn',true);const proc=$('dhProc');proc.style.display='block';
   $('kvis').style.display='none';$('shbox').style.display='none';
-  const steps=[
-    {i:'👩',n:'Alice generates key pair',d:'ECDH P-256 curve'},
-    {i:'👨',n:'Bob generates key pair',d:'ECDH P-256 curve'},
-    {i:'📤',n:'Public keys exchanged',d:'Private keys stay local'},
-    {i:'🤝',n:'Alice derives shared secret',d:'ECDH(Alice_private, Bob_public)'},
-    {i:'🤝',n:'Bob derives shared secret',d:'ECDH(Bob_private, Alice_public)'},
-    {i:'✅',n:'Shared secrets match',d:'Secure channel established'},
-  ];
-  $('dhSteps').innerHTML=steps.map((s,i)=>`<div class="pstep" id="dh${i}"><span class="picon">${s.i}</span><div class="pbody"><div class="pname">${s.n}</div><div class="pdet">${s.d}</div></div><span class="sbadge swait">WAITING</span></div>`).join('');
+  const steps=[{n:'Alice generates key pair',d:'ECDH P-256 curve'},{n:'Bob generates key pair',d:'ECDH P-256 curve'},{n:'Public keys exchanged',d:'Private keys stay local'},{n:'Alice derives shared secret',d:'ECDH(Alice_private, Bob_public)'},{n:'Bob derives shared secret',d:'ECDH(Bob_private, Alice_public)'},{n:'Shared secrets match',d:'Secure channel established'}];
+  $('dhSteps').innerHTML=steps.map((s,i)=>`<div class="pstep" id="dh${i}"><span class="picon">${i+1}</span><div class="pbody"><div class="pname">${s.n}</div><div class="pdet">${s.d}</div></div><span class="sbadge swait">WAITING</span></div>`).join('');
   const act=async(i,v='')=>{
     const el=$(`dh${i}`);el.classList.add('act');el.querySelector('.sbadge').className='sbadge spend';el.querySelector('.sbadge').textContent='RUNNING';
     await new Promise(r=>setTimeout(r,500));
@@ -1046,26 +985,21 @@ async function doDH(){
     const alice=await crypto.subtle.generateKey(a,true,['deriveKey','deriveBits']);
     const apr=await crypto.subtle.exportKey('raw',alice.publicKey);
     await act(0,`Pub: ${b2h(apr).substring(0,32)}...`);
-    observe('key','Alice Key Pair',{public_key:b2h(apr).substring(0,24)+'...',private_key:'[STAYS LOCAL — never transmitted]',curve:'P-256'});
-
+    observe('key','Alice Key Pair',{public_key:b2h(apr).substring(0,24)+'...',private_key:'[STAYS LOCAL]',curve:'P-256'});
     const bob=await crypto.subtle.generateKey(a,true,['deriveKey','deriveBits']);
     const bpr=await crypto.subtle.exportKey('raw',bob.publicKey);
     await act(1,`Pub: ${b2h(bpr).substring(0,32)}...`);
-    observe('key','Bob Key Pair',{public_key:b2h(bpr).substring(0,24)+'...',private_key:'[STAYS LOCAL — never transmitted]',curve:'P-256'});
-
+    observe('key','Bob Key Pair',{public_key:b2h(bpr).substring(0,24)+'...',private_key:'[STAYS LOCAL]',curve:'P-256'});
     $('aPub').textContent=b2h(apr).substring(0,60)+'...';$('bPub').textContent=b2h(bpr).substring(0,60)+'...';
     $('kvis').style.display='flex';
     observe('crypto','Public Key Exchange',{alice_pub:b2h(apr).substring(0,16)+'...',bob_pub:b2h(bpr).substring(0,16)+'...',channel:'Insecure (safe — only public keys)'});
     await act(2);
-
     const as=await crypto.subtle.deriveBits({name:'ECDH',public:bob.publicKey},alice.privateKey,256);
     await act(3,`Alice shared: ${b2h(as).substring(0,32)}...`);
     observe('crypto','Alice Shared Secret',{computed:'ECDH(Alice_priv, Bob_pub)',result:b2h(as).substring(0,24)+'...',bits:'256'});
-
     const bs=await crypto.subtle.deriveBits({name:'ECDH',public:alice.publicKey},bob.privateKey,256);
     await act(4,`Bob shared: ${b2h(bs).substring(0,32)}...`);
     observe('crypto','Bob Shared Secret',{computed:'ECDH(Bob_priv, Alice_pub)',result:b2h(bs).substring(0,24)+'...',bits:'256'});
-
     const match=b2h(as)===b2h(bs);await act(5,match?'MATCH CONFIRMED':'MISMATCH');
     $('shval').textContent=b2h(as);$('shbox').style.display='block';
     observe(match?'crypto':'error','ECDH Result',{match:match?'YES — Both secrets identical':'NO — MISMATCH',shared_secret:b2h(as).substring(0,24)+'...',security:match?'Secure channel established':'Error in key derivation'});
@@ -1073,10 +1007,8 @@ async function doDH(){
   }catch(e){observe('error','ECDH Failed',{error:e.message});console.error(e);}
   setL('dhBtn',false);
 }
-
 async function genKP(){
-  setL('kpBtn',true);
-  const al=$('kAlgo').value;
+  setL('kpBtn',true);const al=$('kAlgo').value;
   let params,algoName;
   if(al==='RSA'){params={name:'RSASSA-PKCS1-v1_5',modulusLength:2048,publicExponent:new Uint8Array([1,0,1]),hash:'SHA-256'};algoName='RSA-2048';}
   else if(al==='EC384'){params={name:'ECDSA',namedCurve:'P-384'};algoName='ECDSA P-384';}
@@ -1094,7 +1026,6 @@ async function genKP(){
   setL('kpBtn',false);
 }
 
-// ─── Messaging ────────────────────────────────────────────────────────────────
 async function initMsgKey(){
   msgKey=await crypto.subtle.generateKey({name:'AES-GCM',length:256},false,['encrypt','decrypt']);
   observe('key','Message Session Key',{algorithm:'AES-256-GCM',source:'crypto.getRandomValues()',exportable:'No',scope:'Session lifetime'});
@@ -1110,16 +1041,16 @@ async function sendMsg(){
   const cb=await crypto.subtle.encrypt({name:'AES-GCM',iv},msgKey,enc.encode(txt));
   observe('crypto','Message Encrypted',{ciphertext_bytes:new Uint8Array(cb).length,iv:b2h(iv.buffer).substring(0,16)+'...'});
   const plain2=new TextDecoder().decode(await crypto.subtle.decrypt({name:'AES-GCM',iv},msgKey,cb));
-  observe('crypto','Message Decrypted',{auth_tag:'Verified ✓',result:plain2.substring(0,30)+(plain2.length>30?'...':''),tamper_detected:'No'});
+  observe('crypto','Message Decrypted',{auth_tag:'Verified',result:plain2.substring(0,30)+(plain2.length>30?'...':''),tamper_detected:'No'});
   msgs.push({plain:txt,cipher:b2b(cb),iv:b2h(iv.buffer),dec:plain2,ts:new Date().toLocaleTimeString()});
   $('msgIn').value='';renderMsgs();
   al.textContent=`Encrypted (${new Uint8Array(cb).length} bytes) — verified`;al.className='alert as show';
 }
 function renderMsgs(){
   const ch=$('msgCh');
-  if(!msgs.length){ch.innerHTML='<div style="text-align:center;color:var(--text3);font-family:var(--mono);font-size:0.68rem;padding:18px">Channel empty.</div>';return;}
-  ch.innerHTML=msgs.map(m=>`<div style="margin-bottom:13px">
-    <div style="font-family:var(--mono);font-size:0.56rem;color:var(--text3);margin-bottom:5px">${m.ts} — IV: ${m.iv.substring(0,14)}...</div>
+  if(!msgs.length){ch.innerHTML='<div style="text-align:center;color:var(--faint);font-family:monospace;font-size:11px;padding:16px">Channel empty.</div>';return;}
+  ch.innerHTML=msgs.map(m=>`<div style="margin-bottom:12px">
+    <div style="font-family:monospace;font-size:9px;color:var(--faint);margin-bottom:4px">${m.ts} — IV: ${m.iv.substring(0,14)}...</div>
     <div class="mbub mpl"><div class="mlb">Plaintext</div>${m.plain}</div>
     <div class="mbub mci"><div class="mlb">Encrypted (AES-256-GCM)</div>${m.cipher.substring(0,68)}${m.cipher.length>68?'...':''}</div>
     <div class="mbub mde"><div class="mlb">Decrypted + Verified</div>${m.dec}</div>
